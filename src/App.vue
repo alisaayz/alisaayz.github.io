@@ -145,7 +145,7 @@ onUnmounted(() => {
                 </div>
                 <section v-for="detail in education.details" :key="detail.title" class="education-detail">
                   <h5 class="education-subheading">{{ detail.title }}</h5>
-                  <ul class="education-list" :class="{ 'education-list-inline': detail.title === 'Languages' || detail.title === 'Interests' }">
+                  <ul class="education-list">
                     <li v-for="item in detail.items" :key="item">{{ item }}</li>
                   </ul>
                 </section>
