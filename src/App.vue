@@ -3,7 +3,7 @@ import { onMounted, onUnmounted, ref } from 'vue'
 import Icon from './components/Icon.vue'
 import { profile, interests } from './portfolio.js'
 import { resume } from './resume.js'
-const pages = ['About', 'Resume', 'Contact']
+const pages = ['About', 'Resume']
 const resumeUrl = `${import.meta.env.BASE_URL}Alisa_Zhu_Resume.pdf`
 const pageFromHash = () => pages.find(page => page.toLowerCase() === location.hash.slice(1)) || 'About'
 const activePage = ref(pageFromHash())
@@ -16,8 +16,6 @@ function toggleTheme() {
   document.querySelector('meta[name="theme-color"]')?.setAttribute('content', isDark.value ? '#1e1e1f' : '#ffffff')
   try { localStorage.setItem('portfolio-theme', theme) } catch { /* The switch still works when storage is unavailable. */ }
 }
-const copyStatus = ref('')
-let timer
 function navigate(page) {
   activePage.value = page
   history.pushState(null, '', `#${page.toLowerCase()}`)
@@ -27,13 +25,8 @@ function syncPage() {
   if (location.hash === '#main-content') return
   activePage.value = pageFromHash()
 }
-async function copyLink() {
-  try { await navigator.clipboard.writeText(profile.github); copyStatus.value = 'Profile link copied.' }
-  catch { copyStatus.value = 'Please copy the profile link above.' }
-  clearTimeout(timer); timer = setTimeout(() => { copyStatus.value = '' }, 4000)
-}
 onMounted(() => window.addEventListener('popstate', syncPage))
-onUnmounted(() => { window.removeEventListener('popstate', syncPage); clearTimeout(timer) })
+onUnmounted(() => window.removeEventListener('popstate', syncPage))
 </script>
 
 <template>
@@ -58,7 +51,7 @@ onUnmounted(() => { window.removeEventListener('popstate', syncPage); clearTimeo
           <li><span class="icon-box"><Icon name="school" /></span><div><span class="eyebrow">Education</span><span>MSBA at UCLA Anderson</span></div></li>
           <li><span class="icon-box"><Icon name="github" /></span><div><span class="eyebrow">GitHub</span><a :href="profile.github" target="_blank" rel="noopener noreferrer">{{ profile.handle }}</a></div></li>
         </ul>
-        <div class="divider"></div><a class="sidebar-cta" href="#contact" @click.prevent="navigate('Contact')">Let’s connect <Icon name="arrow" /></a><p class="sidebar-note">A little about me.<br>A collection of what I’m exploring.</p>
+        <div class="divider"></div><p class="sidebar-note">A little about me.<br>A collection of what I’m exploring.</p>
       </div>
     </aside>
     <main id="main-content" class="content-panel panel" tabindex="-1">
@@ -123,12 +116,6 @@ onUnmounted(() => { window.removeEventListener('popstate', syncPage); clearTimeo
               <div class="interest-tags"><span v-for="item in skill.items" :key="item">{{ item }}</span></div>
             </div>
           </section>
-        </template>
-        <template v-else>
-          <p class="page-description">Good things start with a conversation.</p><div class="contact-hero"><div class="contact-symbol"><Icon name="chat" /></div><span class="eyebrow">Ideas. Questions. New perspectives.</span><h3>Let’s connect<br>and <em>explore.</em></h3><p>Have a question or an idea to share? Send me an email — I’d love to hear from you.</p><a class="primary-button" :href="`mailto:${profile.email}`"><Icon name="mail" /> Send me an email <Icon name="arrow" /></a></div>
-          <div class="contact-link-card"><div><span class="eyebrow">Email</span><a :href="`mailto:${profile.email}`">{{ profile.email }}</a></div><Icon name="mail" /></div>
-          <div class="contact-link-card"><div><span class="eyebrow">LinkedIn</span><a :href="profile.linkedin" target="_blank" rel="noopener noreferrer">linkedin.com/in/alisa-zhu/</a></div><Icon name="linkedin" /></div>
-          <div class="contact-link-card"><div><span class="eyebrow">GitHub profile</span><a :href="profile.github" target="_blank" rel="noopener noreferrer">github.com/{{ profile.handle }}</a></div><button class="icon-button" aria-label="Copy GitHub profile link" @click="copyLink"><Icon name="copy" /></button></div><p class="copy-status" role="status">{{ copyStatus }}</p>
         </template>
       </div><footer class="page-footer"><span>Made with curiosity & care.</span><span>Alisa Zhu <span class="footer-dot">•</span> Portfolio</span></footer>
     </main>
