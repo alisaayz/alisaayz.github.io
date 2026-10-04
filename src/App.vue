@@ -4,6 +4,8 @@ import Icon from './components/Icon.vue'
 import { profile } from './portfolio.js'
 import { resume } from './resume.js'
 import campusReference from './assets/template-reference.png'
+import uclaLogo from './assets/logos/ucla.svg'
+import wfuLogo from './assets/logos/wfu.webp'
 
 const pages = [
   { label: 'About Me', hash: 'about' },
@@ -54,7 +56,6 @@ onUnmounted(() => {
     <aside class="sidebar" aria-label="Profile and navigation">
       <div class="sidebar-brand">
         <h1>{{ profile.name }}</h1>
-        <p>{{ profile.role }}</p>
       </div>
       <nav class="navigation" aria-label="Main navigation">
         <a v-for="(page, index) in pages" :key="page.hash" :href="`#${page.hash}`" :class="{ active: activePage === page.hash }" :aria-current="activePage === page.hash ? 'page' : undefined" @click.prevent="navigate(page.hash)">
@@ -90,7 +91,12 @@ onUnmounted(() => {
             <div class="timeline-heading"><span class="icon-box"><Icon name="school" /></span><h3>Education</h3></div>
             <ol class="timeline resume-timeline">
               <li v-for="education in resume.education" :key="education.school">
-                <h4>{{ education.school }}</h4>
+                <div class="education-heading">
+                  <span class="school-logo" :class="education.school.startsWith('UCLA') ? 'school-logo-ucla' : 'school-logo-wfu'">
+                    <img :src="education.school.startsWith('UCLA') ? uclaLogo : wfuLogo" :alt="education.school.startsWith('UCLA') ? 'UCLA logo' : 'Wake Forest University logo'" />
+                  </span>
+                  <h4>{{ education.school }}</h4>
+                </div>
                 <p class="resume-meta">{{ education.location }}</p>
                 <span class="timeline-label">{{ education.degree }}</span>
                 <p class="resume-dates">{{ education.dates }}</p>

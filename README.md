@@ -33,3 +33,5 @@ GitHub repository: https://github.com/alisaayz/alisaayz.github.io
 Live site: https://alisaayz.github.io/
 
 GitHub Pages uses the GitHub Actions source. The workflow in `.github/workflows/deploy.yml` builds with `--base=/` and publishes `dist/` on pushes to `main`.
+
+Education logos are stored locally in `src/assets/logos/`. UCLA's white wordmark comes from https://www.ucla.edu/img/logo-ucla.svg and is displayed on a blue tile. Wake Forest's WF image comes from https://prod.wp.cdn.aws.wfu.edu/sites/544/2026/03/Brand_WF.webp (linked from its brand guide).
