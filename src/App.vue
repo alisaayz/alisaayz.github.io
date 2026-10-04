@@ -3,8 +3,9 @@ import { onMounted, onUnmounted, ref } from 'vue'
 import Icon from './components/Icon.vue'
 import { profile } from './portfolio.js'
 import { resume } from './resume.js'
-import headshot from './assets/personal/headshot.jpg'
-import signature from './assets/personal/signature.png'
+import headshot from './assets/personal/headshot-expanded.png'
+import signature from './assets/personal/signature-transparent.png'
+import wildCollage from './assets/personal/in-the-wild.png'
 import onoPhoto from './assets/personal/ono.jpg'
 import yuzuPhoto from './assets/personal/yuzu.jpg'
 import uclaLogo from './assets/logos/ucla.svg'
@@ -170,6 +171,7 @@ onUnmounted(() => {
             <section class="personal-card"><h3>Languages</h3><dl class="language-list"><div><dt>English</dt><dd>Native</dd></div><div><dt>Chinese</dt><dd>Native</dd></div><div><dt>Spanish</dt><dd>Beginner</dd></div></dl></section>
             <section class="personal-card"><h3>Hobbies</h3><div class="interest-tags"><span v-for="hobby in ['Golf', 'Skiing', 'Incense crafting', 'Surfing']" :key="hobby">{{ hobby }}</span></div></section>
           </div>
+          <section class="wild-section"><h3>In the Wild</h3><img class="wild-collage" :src="wildCollage" alt="A collage of Alisa exploring a lakeside landscape, visiting snowy Jungfraujoch, enjoying a UCLA event, playing golf, and attending class" loading="lazy" /></section>
           <section class="cat-section"><h3>Meet Ono &amp; Yuzu</h3><div class="cat-grid">
             <figure class="cat-card"><img :src="onoPhoto" alt="Ono, my darker-colored cat, playing on the carpet" loading="lazy" /><figcaption>Ono</figcaption></figure>
             <figure class="cat-card"><img :src="yuzuPhoto" alt="Yuzu, my yellow-colored cat, wearing pink headphones" loading="lazy" /><figcaption>Yuzu</figcaption></figure>

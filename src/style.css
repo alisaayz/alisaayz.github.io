@@ -34,3 +34,7 @@ main{margin-left:250px;min-height:100vh}main:focus{outline:none}.about-page{disp
 @media(max-width:560px){.about-page{padding:40px 25px;gap:30px}.hero-copy h2{font-size:44px}.hero-visual{width:85%;max-width:300px}.about-story{font-size:15px}.personal-grid,.cat-grid{grid-template-columns:1fr}.sidebar-brand{gap:12px}.sidebar-brand h1{font-size:30px}.navigation a{font-size:11px;gap:7px}}
 
 @media(min-width:801px){.sidebar{padding-top:24px;padding-bottom:20px}.signature-logo{height:65px;margin-bottom:8px}.navigation{margin-top:28px;gap:4px}.navigation a{min-height:36px}.sidebar-links{gap:12px;padding-top:20px}}
+
+.signature-logo{height:80px;overflow:visible}.signature-logo img{position:static;display:block;width:100%;height:100%;object-fit:contain;mix-blend-mode:normal}:root[data-theme="dark"] .signature-logo img{mix-blend-mode:normal}.headshot-photo img{object-fit:contain;object-position:center}.wild-section{margin-top:42px}.wild-section h3{margin-bottom:22px;font-size:21px}.wild-collage{display:block;width:100%;height:auto;border-radius:12px;border:1px solid var(--line)}
+@media(min-width:801px){.signature-logo{height:80px}}
+@media(max-width:800px){.signature-logo{width:100px;height:55px}.signature-logo img{width:100%;left:auto;top:auto}}

@@ -11,7 +11,7 @@ export const resume = {
     { category: 'Programming & Data', items: ['Python', 'SQL', 'R', 'Excel'] },
     { category: 'Financial Tools', items: ['Bloomberg Terminal', 'Capital IQ', 'Morningstar'] },
     { category: 'Equity Research & Financial Analysis', items: ['Financial Modeling', 'DCF Valuation', 'Comparable Company Analysis', 'Three-Statement Modeling', 'Company & Industry Research', 'Financial Statement Analysis', 'Investment Due Diligence', 'Scenario & Sensitivity Analysis'] },
-    { category: 'Data & Business Analysis', items: ['Market Research', 'Competitive Intelligence', 'Market Sizing', 'Revenue & Cost Forecasting', 'ROI & Break-Even Analysis', 'KPI Analysis', 'Business Case Development', 'Data Storytelling'] },
+    { category: 'Data & Business Analysis', items: ['Market Research', 'Competitive Intelligence', 'Market Sizing', 'Revenue & Cost Forecasting', 'ROI & Break-Even Analysis', 'Business Case Development', 'Data Storytelling'] },
   ],
   education: [
     {
@@ -22,8 +22,7 @@ export const resume = {
       courseGroups: [
         { title: 'Programming & Data Management', status: 'In progress', courses: ['Python Workshop', 'SQL & Basic Data Management', 'Data Management'] },
         { title: 'Statistics, Machine Learning & Optimization', status: 'In progress', courses: ['Statistical Foundations for Analytics (R)', 'Machine Learning for Decision Making (Python)', 'Optimization (Python)', 'Prescriptive Models'] },
-        { title: 'Business Analytics', status: 'In progress', courses: ['Customer Analytics', 'Competitive Analytics', 'Operations Analytics'] },
-        { title: 'Elective', status: 'In progress', courses: ['Healthcare Analytics'] },
+        { title: 'Business Analytics', status: 'In progress', courses: ['Customer Analytics', 'Competitive Analytics', 'Operations Analytics', 'Healthcare Analytics'] },
       ],
     },
     {
@@ -33,8 +32,7 @@ export const resume = {
       dates: 'Aug 2021 – May 2025',
       courseGroups: [
         { title: 'Data & Quantitative Modeling', courses: ['Elementary Probability & Statistics', 'Applied Quantitative Analysis for Finance', 'Management Information Systems', 'Production and Operations Management'] },
-        { title: 'Finance & Accounting', courses: ['Intermediate Accounting II', 'Intermediate Finance', 'Equity Investments', 'Financial Derivatives', 'Fixed Income and Financial Engineering'] },
-        { title: 'Research & Technology Ethics', courses: ['Advanced Research Methods', 'Topics in Ethics: Technology'] },
+        { title: 'Finance & Accounting', courses: ['Intermediate Accounting II', 'Equity Investments', 'Financial Derivatives', 'Fixed Income and Financial Engineering'] },
       ],
       details: [
         { title: 'Organizations & Leadership', items: ['Women in Business — Member', 'Finance Club — Member', 'Student Marshal', 'Undergraduate Business Student Council — Member', 'Student Budget Advisory Committee — Data & Analytics Subcommittee'] },
