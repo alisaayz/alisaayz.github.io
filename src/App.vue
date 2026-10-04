@@ -3,7 +3,10 @@ import { onMounted, onUnmounted, ref } from 'vue'
 import Icon from './components/Icon.vue'
 import { profile } from './portfolio.js'
 import { resume } from './resume.js'
-import campusReference from './assets/template-reference.png'
+import headshot from './assets/personal/headshot.jpg'
+import signature from './assets/personal/signature.png'
+import onoPhoto from './assets/personal/ono.jpg'
+import yuzuPhoto from './assets/personal/yuzu.jpg'
 import uclaLogo from './assets/logos/ucla.svg'
 import wfuLogo from './assets/logos/wfu.webp'
 
@@ -13,6 +16,7 @@ const pages = [
   { label: 'Education', hash: 'education' },
   { label: 'Projects', hash: 'projects' },
   { label: 'Skills', hash: 'skills' },
+  { label: 'Beyond the Resume', hash: 'beyond' },
 ]
 const resumeUrl = `${import.meta.env.BASE_URL}Alisa_Zhu_Resume.pdf`
 const pageFromHash = () => {
@@ -63,6 +67,7 @@ onUnmounted(() => {
   <div class="site-layout">
     <aside class="sidebar" aria-label="Profile and navigation">
       <div class="sidebar-brand">
+        <a class="signature-logo" href="#about" aria-label="Alisa Zhu home" @click.prevent="navigate('about')"><img :src="signature" alt="Alisa Zhu signature logo" /></a>
         <h1>{{ profile.name }}</h1>
       </div>
       <nav class="navigation" aria-label="Main navigation">
@@ -85,16 +90,15 @@ onUnmounted(() => {
       <section v-if="activePage === 'about'" class="about-page" aria-label="About Me">
         <div class="hero-copy">
           <p class="eyebrow">Data Analytics <span>•</span> Finance <span>•</span> Technology</p>
-          <h2>Curious about data.<br>Driven by <em>impact.</em></h2>
-          <p class="hero-description">{{ profile.heroParagraph }}</p>
+          <h2>Turning data into<br>better <em>business decisions.</em></h2>
         </div>
         <div class="hero-visual">
-          <span class="orbit" aria-hidden="true"></span>
-          <div class="campus-photo"><img :src="campusReference" alt="UCLA's Royce Hall framed by trees and blue sky" /></div>
+          <div class="headshot-photo"><img :src="headshot" alt="Alisa Zhu headshot" /></div>
         </div>
+        <div class="about-story"><p v-for="paragraph in profile.aboutParagraphs" :key="paragraph">{{ paragraph }}</p></div>
       </section>
       <div v-else class="page-content" :key="activePage">
-        <header class="page-header"><p class="eyebrow">{{ activePage === 'experience' ? 'Professional journey' : activePage === 'education' ? 'Learning & foundations' : activePage === 'skills' ? 'Tools & expertise' : 'Ideas into practice' }}</p><h2>{{ pages.find(page => page.hash === activePage)?.label }}</h2></header>
+        <header class="page-header"><p class="eyebrow">{{ activePage === 'experience' ? 'Professional journey' : activePage === 'education' ? 'Learning & foundations' : activePage === 'skills' ? 'Tools & expertise' : activePage === 'beyond' ? 'A little more about me' : 'Ideas into practice' }}</p><h2>{{ pages.find(page => page.hash === activePage)?.label }}</h2></header>
         <template v-if="activePage === 'experience'">
           <div class="resume-actions">
             <a class="primary-button" :href="resumeUrl" target="_blank" rel="noopener noreferrer">View Resume <Icon name="arrow" /></a>
@@ -134,7 +138,6 @@ onUnmounted(() => {
                 <p class="resume-dates">{{ education.dates }}</p>
                 <div class="education-coursework">
                   <h5 class="education-subheading">Relevant Coursework</h5>
-                  <p v-if="education.courseworkNote" class="coursework-note">{{ education.courseworkNote }}</p>
                   <div class="coursework-grid">
                     <section v-for="group in education.courseGroups" :key="group.title" class="coursework-group">
                       <h6>{{ group.title }}</h6>
@@ -162,9 +165,19 @@ onUnmounted(() => {
             </div>
           </section>
         </template>
+        <section v-else-if="activePage === 'beyond'" class="beyond-page">
+          <div class="personal-grid">
+            <section class="personal-card"><h3>Languages</h3><dl class="language-list"><div><dt>English</dt><dd>Native</dd></div><div><dt>Chinese</dt><dd>Native</dd></div><div><dt>Spanish</dt><dd>Beginner</dd></div></dl></section>
+            <section class="personal-card"><h3>Hobbies</h3><div class="interest-tags"><span v-for="hobby in ['Golf', 'Skiing', 'Incense crafting', 'Surfing']" :key="hobby">{{ hobby }}</span></div></section>
+          </div>
+          <section class="cat-section"><h3>Meet Ono &amp; Yuzu</h3><div class="cat-grid">
+            <figure class="cat-card"><img :src="onoPhoto" alt="Ono, my darker-colored cat, playing on the carpet" loading="lazy" /><figcaption>Ono</figcaption></figure>
+            <figure class="cat-card"><img :src="yuzuPhoto" alt="Yuzu, my yellow-colored cat, wearing pink headphones" loading="lazy" /><figcaption>Yuzu</figcaption></figure>
+          </div></section>
+        </section>
         <section v-else-if="activePage === 'projects'" class="coming-soon">
           <span class="coming-symbol" aria-hidden="true">✧</span>
-          <h3>Coming...</h3>
+          <h3>Coming soon</h3>
           <p>New projects will be shared here.</p>
         </section>
       </div>

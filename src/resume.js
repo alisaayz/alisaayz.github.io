@@ -10,7 +10,8 @@ export const resume = {
   skills: [
     { category: 'Programming & Data', items: ['Python', 'SQL', 'R', 'Excel'] },
     { category: 'Financial Tools', items: ['Bloomberg Terminal', 'Capital IQ', 'Morningstar'] },
-    { category: 'Analytics', items: ['Financial Modeling', 'DCF Valuation', 'Comparable Company Analysis', 'Three-Statement Modeling'] },
+    { category: 'Equity Research & Financial Analysis', items: ['Financial Modeling', 'DCF Valuation', 'Comparable Company Analysis', 'Three-Statement Modeling', 'Company & Industry Research', 'Financial Statement Analysis', 'Investment Due Diligence', 'Scenario & Sensitivity Analysis'] },
+    { category: 'Data & Business Analysis', items: ['Market Research', 'Competitive Intelligence', 'Market Sizing', 'Revenue & Cost Forecasting', 'ROI & Break-Even Analysis', 'KPI Analysis', 'Business Case Development', 'Data Storytelling'] },
   ],
   education: [
     {
@@ -18,12 +19,11 @@ export const resume = {
       location: 'Los Angeles, CA',
       degree: 'Master of Science in Business Analytics (MSBA)',
       dates: 'Sept 2026 – Expected Dec 2027',
-      courseworkNote: 'Selected coursework by skill area. Currently taking Fall #1; future courses are marked Upcoming. All listed UCLA coursework is in progress.',
       courseGroups: [
-        { title: 'Programming & Data Management', status: 'In progress', courses: ['Python Workshop', 'SQL & Basic Data Management', 'Data Management (Upcoming)'] },
-        { title: 'Statistics, Machine Learning & Optimization', status: 'In progress', courses: ['Statistical Foundations for Analytics (R)', 'Machine Learning for Decision Making (Python)', 'Optimization (Python)', 'Prescriptive Models (Upcoming)'] },
-        { title: 'Business Analytics', status: 'In progress · Upcoming', courses: ['Customer Analytics', 'Competitive Analytics', 'Operations Analytics'] },
-        { title: 'Elective', status: 'In progress · Upcoming', courses: ['Healthcare Analytics'] },
+        { title: 'Programming & Data Management', status: 'In progress', courses: ['Python Workshop', 'SQL & Basic Data Management', 'Data Management'] },
+        { title: 'Statistics, Machine Learning & Optimization', status: 'In progress', courses: ['Statistical Foundations for Analytics (R)', 'Machine Learning for Decision Making (Python)', 'Optimization (Python)', 'Prescriptive Models'] },
+        { title: 'Business Analytics', status: 'In progress', courses: ['Customer Analytics', 'Competitive Analytics', 'Operations Analytics'] },
+        { title: 'Elective', status: 'In progress', courses: ['Healthcare Analytics'] },
       ],
     },
     {
@@ -37,7 +37,7 @@ export const resume = {
         { title: 'Research & Technology Ethics', courses: ['Advanced Research Methods', 'Topics in Ethics: Technology'] },
       ],
       details: [
-        { title: 'Organizations & Leadership', items: ['Women in Business — Member', 'Finance Club — Member', 'Student Marshal', 'Undergraduate Business Student Council — Member', 'Student Budget Advisory Committee — Data & Analytics Subcommittee · Winston-Salem, NC · Aug 2021 – May 2023'] },
+        { title: 'Organizations & Leadership', items: ['Women in Business — Member', 'Finance Club — Member', 'Student Marshal', 'Undergraduate Business Student Council — Member', 'Student Budget Advisory Committee — Data & Analytics Subcommittee'] },
         { title: 'Awards', items: ['Conrad Challenge — Finalist, Power Pitch Winner, and Conrad Challenge Innovator', 'Blue Ocean Competition — Top 100 Finalist', 'Ivey Business Case Competition — Vancouver Region Second Place', 'Discover Your Pitch — Preliminary Round First Place'] },
       ],
     },
