@@ -132,7 +132,23 @@ onUnmounted(() => {
                 <p class="resume-meta">{{ education.location }}</p>
                 <span class="timeline-label">{{ education.degree }}</span>
                 <p class="resume-dates">{{ education.dates }}</p>
-                <p class="resume-coursework"><strong>Coursework:</strong> {{ education.courses }}</p>
+                <div class="education-coursework">
+                  <h5 class="education-subheading">Relevant Coursework</h5>
+                  <p v-if="education.courseworkNote" class="coursework-note">{{ education.courseworkNote }}</p>
+                  <div class="coursework-grid">
+                    <section v-for="group in education.courseGroups" :key="group.title" class="coursework-group">
+                      <h6>{{ group.title }}</h6>
+                      <span v-if="group.status" class="coursework-status">{{ group.status }}</span>
+                      <ul class="education-list"><li v-for="course in group.courses" :key="course">{{ course }}</li></ul>
+                    </section>
+                  </div>
+                </div>
+                <section v-for="detail in education.details" :key="detail.title" class="education-detail">
+                  <h5 class="education-subheading">{{ detail.title }}</h5>
+                  <ul class="education-list" :class="{ 'education-list-inline': detail.title === 'Languages' || detail.title === 'Interests' }">
+                    <li v-for="item in detail.items" :key="item">{{ item }}</li>
+                  </ul>
+                </section>
               </li>
             </ol>
           </section>

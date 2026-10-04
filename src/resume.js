@@ -18,14 +18,31 @@ export const resume = {
       location: 'Los Angeles, CA',
       degree: 'Master of Science in Business Analytics (MSBA)',
       dates: 'Sept 2026 – Expected Dec 2027',
-      courses: 'Statistical Foundations for Analytics (R), Machine Learning for Decision Making, SQL & Basic Data Management, Optimization (Python), Prescriptive Models and Data Analytics, Healthcare Analytics',
+      courseworkNote: 'Currently taking Fall #1. Future terms are marked in progress; Fall #2 electives are curriculum options.',
+      courseGroups: [
+        { title: 'Fall #1 · September–December', status: 'In progress · Current term', courses: ['Statistical Foundations for Analytics (R)', 'Python Workshop', 'Optimization (Python)', 'SQL & Basic Data Management', 'Machine Learning for Decision Making (Python)'] },
+        { title: 'Winter · January–March', status: 'In progress · Upcoming', courses: ['Business Fundamentals for Analytics', 'Data Management', 'Prescriptive Models', 'Industry Seminar I'] },
+        { title: 'Spring · March–June', status: 'In progress · Upcoming', courses: ['Customer Analytics', 'Competitive Analytics', 'Operations Analytics', 'Industry Seminar II'] },
+        { title: 'Fall #2 · September–December', status: 'In progress · Upcoming', courses: ['Capstone Analytics Project'] },
+        { title: 'Fall #2 · Elective options', status: 'In progress · Upcoming', courses: ['Internet Customer Analytics', 'Entertainment Analytics', 'Healthcare Analytics', 'Advanced Workshop on Machine Learning', 'Data Visualization', 'Fraud Analytics', 'Forecasting and Time Series'] },
+      ],
     },
     {
       school: 'Wake Forest University',
       location: 'Winston Salem, NC',
       degree: 'Bachelor of Science in Finance, Major in Philosophy',
       dates: 'Aug 2021 – May 2025',
-      courses: 'Managerial Accounting, Equity Investments, Fixed Income & Financial Engineering, Financial Derivatives',
+      courseGroups: [
+        { title: 'Data & Quantitative Modeling', courses: ['Calculus / Analytic Geometry I', 'Elementary Probability & Statistics', 'Quantitative Analysis I', 'Applied Quantitative Analysis for Finance', 'Management Information Systems', 'Production and Operations Management', 'Management Simulation'] },
+        { title: 'Finance & Accounting', courses: ['Introduction to Economics', 'College Fed Challenge', 'Introductory Financial Accounting', 'Intermediate Accounting I', 'Intermediate Accounting II', 'Introductory Management Accounting', 'Principles of Finance', 'Intermediate Finance', 'Equity Investments', 'Financial Derivatives', 'Fixed Income and Financial Engineering'] },
+        { title: 'Research, Technology Ethics & Strategy', courses: ['Advanced Research Methods', 'Business and Accounting Research Sources and Strategies', 'Logic', 'Topics in Ethics: Technology', 'Philosophy of Science', 'Strategic Management'] },
+      ],
+      details: [
+        { title: 'Organizations & Leadership', items: ['Women in Business — Member', 'Finance Club — Member', 'Student Marshal', 'Undergraduate Business Student Council — Member'] },
+        { title: 'Awards', items: ['Conrad Challenge — Finalist, Power Pitch Winner, and Conrad Challenge Innovator', 'Blue Ocean Competition — Top 100 Finalist', 'Ivey Business Case Competition — Vancouver Region Second Place', 'Discover Your Pitch — Preliminary Round First Place'] },
+        { title: 'Languages', items: ['English (Native)', 'Mandarin (Native)'] },
+        { title: 'Interests', items: ['Volleyball', 'Cooking (Chinese, Italian, Fusion)', 'Baking (Chinese, Japanese and French Pastries)', 'Gong Fu Tea', 'Incense Crafting'] },
+      ],
     },
   ],
   experience: [
