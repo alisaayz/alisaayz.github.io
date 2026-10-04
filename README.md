@@ -13,7 +13,7 @@ npm run dev
 
 Edit `src/portfolio.js` for the profile, biography, areas of interest, projects, and articles. Edit `src/resume.js` for the resume summary, contact information, education, professional experience, and technical skills. The Resume tab follows the site's timeline and tag styling, with View and Download buttons at the top linking to `public/Alisa_Zhu_Resume.pdf`. Update both the resume data and PDF when revising the resume. Projects and articles are clearly marked examples; replace them with real work before publishing.
 
-The three sections support hash links and browser back/forward. Portfolio and Blog pages are not shown. The email links open a mail app addressed to alisa.ayz@gmail.com. The location links to UCLA Anderson’s directions for 110 Westwood Plaza, Los Angeles, CA 90095. The phone value is empty and its row stays hidden until a number is added. GitHub links and the profile URL copy button are also available. No email form or backend is configured.
+The three sections support hash links and browser back/forward. Portfolio and Blog pages are not shown. The email links open a mail app addressed to alisa.yh.zhu@gmail.com. LinkedIn appears immediately after email in the profile and Contact page. The location displays Los Angeles and links to its map. The phone value is empty and its row stays hidden until a number is added. GitHub links and the profile URL copy button are also available. No email form or backend is configured.
 
 The Light / Dark switch below the profile remembers the selected theme in local storage. Dark is the default; a saved choice is applied before the page paints. The control supports keyboard input and remains visible on mobile.
 

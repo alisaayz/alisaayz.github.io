@@ -2,13 +2,13 @@
 export const profile = {
   name: 'Alisa Zhu', initials: 'AZ', role: 'data/business analysis',
   github: 'https://github.com/alisaayz', handle: 'alisaayz',
-  email: 'alisa.ayz@gmail.com',
+  email: 'alisa.yh.zhu@gmail.com',
+  linkedin: 'https://www.linkedin.com/in/alisa-zhu/',
   phone: '',
   location: {
     school: 'UCLA Anderson School of Management',
-    street: '110 Westwood Plaza',
-    city: 'Los Angeles, CA 90095',
-    url: 'https://www.anderson.ucla.edu/about/maps-and-directions',
+    city: 'Los Angeles',
+    url: 'https://www.google.com/maps/search/?api=1&query=Los+Angeles',
   },
   bio: [
     'Hi, I’m Alisa, an MSBA student at UCLA Anderson School of Management. Welcome to my personal corner of the internet.',
