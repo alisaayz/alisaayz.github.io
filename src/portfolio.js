@@ -1,6 +1,6 @@
 // Edit this file to personalize your portfolio. Projects and resume entries are examples.
 export const profile = {
-  name: 'Alisa Zhu', initials: 'AZ', role: 'MSBA · UCLA Anderson',
+  name: 'Alisa Zhu', initials: 'AZ', role: 'data/business analysis',
   github: 'https://github.com/alisaayz', handle: 'alisaayz',
   email: 'alisa.ayz@gmail.com',
   phone: '',
@@ -12,7 +12,7 @@ export const profile = {
   },
   bio: [
     'Hi, I’m Alisa, an MSBA student at UCLA Anderson School of Management. Welcome to my personal corner of the internet.',
-    'This is a space for my work, ideas, and learning journey in business analytics. Explore my portfolio, learn more about my background, or get in touch.'
+    'This is a space for my work, ideas, and learning journey in business analytics. Learn more about my background or get in touch.'
   ],
 }
 export const interests = [

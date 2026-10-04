@@ -1,9 +1,9 @@
 <script setup>
-import { computed, nextTick, onMounted, onUnmounted, ref } from 'vue'
+import { onMounted, onUnmounted, ref } from 'vue'
 import Icon from './components/Icon.vue'
-import { profile, interests, projects, posts } from './portfolio.js'
+import { profile, interests } from './portfolio.js'
 import { resume } from './resume.js'
-const pages = ['About', 'Resume', 'Portfolio', 'Blog', 'Contact']
+const pages = ['About', 'Resume', 'Contact']
 const resumeUrl = `${import.meta.env.BASE_URL}Alisa_Zhu_Resume.pdf`
 const pageFromHash = () => pages.find(page => page.toLowerCase() === location.hash.slice(1)) || 'About'
 const activePage = ref(pageFromHash())
@@ -16,11 +16,6 @@ function toggleTheme() {
   document.querySelector('meta[name="theme-color"]')?.setAttribute('content', isDark.value ? '#1e1e1f' : '#ffffff')
   try { localStorage.setItem('portfolio-theme', theme) } catch { /* The switch still works when storage is unavailable. */ }
 }
-const filter = ref('All')
-const categories = ['All', 'Analytics', 'Visualization', 'Machine learning']
-const visibleProjects = computed(() => projects.filter(p => filter.value === 'All' || p.category === filter.value))
-const selected = ref(null)
-const modal = ref(null)
 const copyStatus = ref('')
 let timer
 function navigate(page) {
@@ -32,7 +27,6 @@ function syncPage() {
   if (location.hash === '#main-content') return
   activePage.value = pageFromHash()
 }
-async function openItem(item) { selected.value = item; await nextTick(); modal.value.showModal() }
 async function copyLink() {
   try { await navigator.clipboard.writeText(profile.github); copyStatus.value = 'Profile link copied.' }
   catch { copyStatus.value = 'Please copy the profile link above.' }
@@ -75,7 +69,6 @@ onUnmounted(() => { window.removeEventListener('popstate', syncPage); clearTimeo
         <template v-if="activePage === 'About'">
           <div class="intro-copy"><p v-for="paragraph in profile.bio" :key="paragraph">{{ paragraph }}</p></div>
           <section class="section-block"><h3>What I’m Exploring</h3><div class="services-grid"><article v-for="interest in interests" :key="interest.title" class="service-card"><Icon :name="interest.icon" /><div><h4>{{ interest.title }}</h4><p>{{ interest.description }}</p></div></article></div></section>
-          <section class="section-block"><div class="section-heading"><h3>Project Gallery</h3><a href="#portfolio" @click.prevent="navigate('Portfolio')">View all <Icon name="arrow" /></a></div><div class="projects-grid featured-grid"><button v-for="project in projects.slice(0, 2)" :key="project.title" class="project-card" @click="openItem(project)"><div class="project-art" :class="project.art"><div class="art-window"><span class="art-kicker">{{ project.kicker }}</span><strong>{{ project.wordmark }}</strong><span class="art-lines"></span><span class="art-orbit"></span></div><span class="project-open"><Icon name="arrow" /></span></div><h4>{{ project.title }}</h4><p>{{ project.category }} · Sample project</p></button></div></section>
           <section class="section-block journey-card"><Icon name="school" /><div><span class="eyebrow">The next chapter</span><h4>UCLA Anderson School of Management</h4><p>Master of Science in Business Analytics</p></div></section>
         </template>
         <template v-else-if="activePage === 'Resume'">
@@ -132,15 +125,6 @@ onUnmounted(() => { window.removeEventListener('popstate', syncPage); clearTimeo
             </div>
           </section>
         </template>
-        <template v-else-if="activePage === 'Portfolio'">
-          <p class="page-description">A space for exploring data, asking questions, and sharing discoveries.</p><p class="sample-note"><span></span>Sample projects · Real work will be added here.</p>
-          <div class="filters" aria-label="Filter projects"><button v-for="category in categories" :key="category" :class="{ active: filter === category }" :aria-pressed="filter === category" @click="filter = category">{{ category }}</button></div>
-          <div class="projects-grid"><button v-for="project in visibleProjects" :key="project.title" class="project-card" @click="openItem(project)"><div class="project-art" :class="project.art"><div class="art-window"><span class="art-kicker">{{ project.kicker }}</span><strong>{{ project.wordmark }}</strong><span class="art-lines"></span><span class="art-orbit"></span></div><span class="project-open"><Icon name="arrow" /></span></div><h4>{{ project.title }}</h4><p>{{ project.category }}</p></button></div><p class="result-count" aria-live="polite">{{ visibleProjects.length }} sample projects</p>
-        </template>
-        <template v-else-if="activePage === 'Blog'">
-          <p class="page-description">Notes on analytics, ideas, and the things learned along the way.</p><p class="sample-note"><span></span>Sample articles · A starting point for future writing.</p>
-          <div class="blog-grid"><button v-for="post in posts" :key="post.title" class="blog-card" @click="openItem(post)"><div class="blog-art" :class="post.art"><span>{{ post.visual }}</span><Icon name="sparkle" /></div><div class="blog-copy"><span class="eyebrow">{{ post.category }} · Sample article</span><h3>{{ post.title }}</h3><p>{{ post.description }}</p><span class="read-story">Read story <Icon name="arrow" /></span></div></button></div>
-        </template>
         <template v-else>
           <p class="page-description">Good things start with a conversation.</p><div class="contact-hero"><div class="contact-symbol"><Icon name="chat" /></div><span class="eyebrow">Ideas. Questions. New perspectives.</span><h3>Let’s connect<br>and <em>explore.</em></h3><p>Have a question or an idea to share? Send me an email — I’d love to hear from you.</p><a class="primary-button" :href="`mailto:${profile.email}`"><Icon name="mail" /> Send me an email <Icon name="arrow" /></a></div>
           <div class="contact-link-card"><div><span class="eyebrow">Email</span><a :href="`mailto:${profile.email}`">{{ profile.email }}</a></div><Icon name="mail" /></div>
@@ -150,5 +134,4 @@ onUnmounted(() => { window.removeEventListener('popstate', syncPage); clearTimeo
       </div><footer class="page-footer"><span>Made with curiosity & care.</span><span>Alisa Zhu <span class="footer-dot">•</span> Portfolio</span></footer>
     </main>
   </div>
-  <dialog ref="modal" class="detail-modal" aria-labelledby="detail-title" @click="event => { if (event.target === modal) modal.close() }"><template v-if="selected"><button class="icon-button modal-close" aria-label="Close details" @click="modal.close()"><Icon name="close" /></button><span class="eyebrow">{{ selected.category }} · Sample content</span><h2 id="detail-title">{{ selected.title }}</h2><span class="title-rule"></span><p>{{ selected.description }}</p><p v-for="paragraph in selected.body.split('\n\n')" :key="paragraph">{{ paragraph }}</p><div v-if="selected.tags" class="interest-tags"><span v-for="tag in selected.tags" :key="tag">{{ tag }}</span></div><button class="text-button" @click="modal.close()">Back to exploring <Icon name="arrow" /></button></template></dialog>
 </template>
