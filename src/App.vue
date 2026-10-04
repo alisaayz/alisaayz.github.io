@@ -10,6 +10,7 @@ import wfuLogo from './assets/logos/wfu.webp'
 const pages = [
   { label: 'About Me', hash: 'about' },
   { label: 'Experience', hash: 'experience' },
+  { label: 'Education', hash: 'education' },
   { label: 'Projects', hash: 'projects' },
   { label: 'Skills', hash: 'skills' },
 ]
@@ -21,12 +22,19 @@ const pageFromHash = () => {
 }
 const activePage = ref(pageFromHash())
 const systemTheme = window.matchMedia('(prefers-color-scheme: dark)')
+const themePreference = ref(document.documentElement.dataset.themePreference || 'system')
 const isDark = ref(systemTheme.matches)
 function syncTheme() {
-  isDark.value = systemTheme.matches
+  isDark.value = themePreference.value === 'system' ? systemTheme.matches : themePreference.value === 'dark'
   const theme = isDark.value ? 'dark' : 'light'
   document.documentElement.dataset.theme = theme
   document.querySelector('meta[name="theme-color"]')?.setAttribute('content', isDark.value ? '#111a27' : '#ffffff')
+}
+function chooseTheme(preference) {
+  themePreference.value = preference
+  document.documentElement.dataset.themePreference = preference
+  try { localStorage.setItem('portfolio-appearance', preference) } catch { /* The selection still works without storage. */ }
+  syncTheme()
 }
 function navigate(page) {
   activePage.value = page
@@ -65,7 +73,12 @@ onUnmounted(() => {
       <div class="sidebar-links">
         <a :href="`mailto:${profile.email}`"><Icon name="mail" /><span><small>Email</small>{{ profile.email }}</span></a>
         <a :href="profile.linkedin" target="_blank" rel="noopener noreferrer"><Icon name="linkedin" /><span><small>LinkedIn</small>alisa-zhu <Icon name="arrow" /></span></a>
-        <p class="theme-status"><Icon :name="isDark ? 'moon' : 'sun'" /><span>System theme</span></p>
+        <div class="appearance-control">
+          <p class="theme-status"><Icon :name="isDark ? 'moon' : 'sun'" /><span>Appearance</span></p>
+          <div class="appearance-options" role="group" aria-label="Appearance">
+            <button v-for="option in ['system', 'light', 'dark']" :key="option" type="button" :aria-pressed="themePreference === option" @click="chooseTheme(option)">{{ option }}</button>
+          </div>
+        </div>
       </div>
     </aside>
     <main id="main-content" tabindex="-1">
@@ -81,29 +94,12 @@ onUnmounted(() => {
         </div>
       </section>
       <div v-else class="page-content" :key="activePage">
-        <header class="page-header"><p class="eyebrow">{{ activePage === 'experience' ? 'Background & journey' : activePage === 'skills' ? 'Tools & expertise' : 'Ideas into practice' }}</p><h2>{{ pages.find(page => page.hash === activePage)?.label }}</h2></header>
+        <header class="page-header"><p class="eyebrow">{{ activePage === 'experience' ? 'Professional journey' : activePage === 'education' ? 'Learning & foundations' : activePage === 'skills' ? 'Tools & expertise' : 'Ideas into practice' }}</p><h2>{{ pages.find(page => page.hash === activePage)?.label }}</h2></header>
         <template v-if="activePage === 'experience'">
           <div class="resume-actions">
             <a class="primary-button" :href="resumeUrl" target="_blank" rel="noopener noreferrer">View Resume <Icon name="arrow" /></a>
             <a class="secondary-button" :href="resumeUrl" download="Alisa_Zhu_Resume.pdf">Download PDF <Icon name="book" /></a>
           </div>
-          <section class="section-block">
-            <div class="timeline-heading"><span class="icon-box"><Icon name="school" /></span><h3>Education</h3></div>
-            <ol class="timeline resume-timeline">
-              <li v-for="education in resume.education" :key="education.school">
-                <div class="education-heading">
-                  <span class="school-logo" :class="education.school.startsWith('UCLA') ? 'school-logo-ucla' : 'school-logo-wfu'">
-                    <img :src="education.school.startsWith('UCLA') ? uclaLogo : wfuLogo" :alt="education.school.startsWith('UCLA') ? 'UCLA logo' : 'Wake Forest University logo'" />
-                  </span>
-                  <h4>{{ education.school }}</h4>
-                </div>
-                <p class="resume-meta">{{ education.location }}</p>
-                <span class="timeline-label">{{ education.degree }}</span>
-                <p class="resume-dates">{{ education.dates }}</p>
-                <p class="resume-coursework"><strong>Coursework:</strong> {{ education.courses }}</p>
-              </li>
-            </ol>
-          </section>
           <section class="section-block">
             <div class="timeline-heading"><span class="icon-box"><Icon name="book" /></span><h3>Professional Experience</h3></div>
             <ol class="timeline resume-timeline">
@@ -118,6 +114,25 @@ onUnmounted(() => {
                   <h5 v-if="group.title">{{ group.title }}</h5>
                   <ul class="resume-bullets"><li v-for="bullet in group.bullets" :key="bullet">{{ bullet }}</li></ul>
                 </div>
+              </li>
+            </ol>
+          </section>
+        </template>
+        <template v-else-if="activePage === 'education'">
+          <section class="section-block">
+            <div class="timeline-heading"><span class="icon-box"><Icon name="school" /></span><h3>Education</h3></div>
+            <ol class="timeline resume-timeline">
+              <li v-for="education in resume.education" :key="education.school">
+                <div class="education-heading">
+                  <span class="school-logo" :class="education.school.startsWith('UCLA') ? 'school-logo-ucla' : 'school-logo-wfu'">
+                    <img :src="education.school.startsWith('UCLA') ? uclaLogo : wfuLogo" :alt="education.school.startsWith('UCLA') ? 'UCLA logo' : 'Wake Forest University logo'" />
+                  </span>
+                  <h4>{{ education.school }}</h4>
+                </div>
+                <p class="resume-meta">{{ education.location }}</p>
+                <span class="timeline-label">{{ education.degree }}</span>
+                <p class="resume-dates">{{ education.dates }}</p>
+                <p class="resume-coursework"><strong>Coursework:</strong> {{ education.courses }}</p>
               </li>
             </ol>
           </section>

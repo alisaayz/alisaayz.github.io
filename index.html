@@ -6,9 +6,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#ffffff" />
     <script>
-      // Follow the system appearance before the first paint.
+      // Default to system appearance and apply a saved override before the first paint.
       {
-        const theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
+        let preference = 'system'
+        try {
+          const saved = localStorage.getItem('portfolio-appearance')
+          if (['system', 'light', 'dark'].includes(saved)) preference = saved
+        } catch { /* Use system appearance when storage is unavailable. */ }
+        const theme = preference === 'system' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : preference
+        document.documentElement.dataset.themePreference = preference
         document.documentElement.dataset.theme = theme
         document.querySelector('meta[name="theme-color"]').content = theme === 'light' ? '#ffffff' : '#111a27'
       }
