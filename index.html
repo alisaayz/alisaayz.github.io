@@ -4,14 +4,14 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="theme-color" content="#1e1e1f" />
+    <meta name="theme-color" content="#ffffff" />
     <script>
-      // Apply the saved theme before the page paints, retaining dark as the default.
+      // Apply the saved theme before the page paints, using the reference design’s light palette by default.
       try {
-        const theme = localStorage.getItem('portfolio-theme') === 'light' ? 'light' : 'dark'
+        const theme = localStorage.getItem('portfolio-theme') === 'dark' ? 'dark' : 'light'
         document.documentElement.dataset.theme = theme
-        document.querySelector('meta[name="theme-color"]').content = theme === 'light' ? '#ffffff' : '#1e1e1f'
-      } catch { document.documentElement.dataset.theme = 'dark' }
+        document.querySelector('meta[name="theme-color"]').content = theme === 'light' ? '#ffffff' : '#111a27'
+      } catch { document.documentElement.dataset.theme = 'light' }
     </script>
     <meta name="description" content="Alisa Zhu — MSBA student at UCLA Anderson School of Management. Explore my background, projects, and journey in business analytics." />
     <title>Alisa Zhu · Business Analytics</title>

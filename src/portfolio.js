@@ -4,6 +4,7 @@ export const profile = {
   github: 'https://github.com/alisaayz', handle: 'alisaayz',
   email: 'alisa.yh.zhu@gmail.com',
   linkedin: 'https://www.linkedin.com/in/alisa-zhu/',
+  heroParagraph: 'I leverage data, analytics, finance, and technology to solve meaningful business problems and create lasting impact.',
   phone: '',
   location: {
     school: 'UCLA Anderson School of Management',

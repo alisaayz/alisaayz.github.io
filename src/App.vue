@@ -1,84 +1,93 @@
 <script setup>
 import { onMounted, onUnmounted, ref } from 'vue'
 import Icon from './components/Icon.vue'
-import { profile, interests } from './portfolio.js'
+import { profile } from './portfolio.js'
 import { resume } from './resume.js'
-const pages = ['About', 'Resume']
+import campusReference from './assets/template-reference.png'
+
+const pages = [
+  { label: 'About Me', hash: 'about' },
+  { label: 'Experience', hash: 'experience' },
+  { label: 'Projects', hash: 'projects' },
+  { label: 'Skills', hash: 'skills' },
+]
 const resumeUrl = `${import.meta.env.BASE_URL}Alisa_Zhu_Resume.pdf`
-const pageFromHash = () => pages.find(page => page.toLowerCase() === location.hash.slice(1)) || 'About'
+const pageFromHash = () => {
+  const hash = location.hash.slice(1)
+  if (hash === 'resume') return 'experience'
+  return pages.some(page => page.hash === hash) ? hash : 'about'
+}
 const activePage = ref(pageFromHash())
-const detailsOpen = ref(false)
-const isDark = ref(document.documentElement.dataset.theme !== 'light')
+const isDark = ref(document.documentElement.dataset.theme === 'dark')
 function toggleTheme() {
   isDark.value = !isDark.value
   const theme = isDark.value ? 'dark' : 'light'
   document.documentElement.dataset.theme = theme
-  document.querySelector('meta[name="theme-color"]')?.setAttribute('content', isDark.value ? '#1e1e1f' : '#ffffff')
-  try { localStorage.setItem('portfolio-theme', theme) } catch { /* The switch still works when storage is unavailable. */ }
+  document.querySelector('meta[name="theme-color"]')?.setAttribute('content', isDark.value ? '#111a27' : '#ffffff')
+  try { localStorage.setItem('portfolio-theme', theme) } catch { /* Theme still works without storage. */ }
 }
 function navigate(page) {
   activePage.value = page
-  history.pushState(null, '', `#${page.toLowerCase()}`)
+  history.pushState(null, '', `#${page}`)
   window.scrollTo({ top: 0, behavior: 'instant' })
 }
 function syncPage() {
   if (location.hash === '#main-content') return
   activePage.value = pageFromHash()
 }
-onMounted(() => window.addEventListener('popstate', syncPage))
-onUnmounted(() => window.removeEventListener('popstate', syncPage))
+onMounted(() => {
+  window.addEventListener('popstate', syncPage)
+  window.addEventListener('hashchange', syncPage)
+})
+onUnmounted(() => {
+  window.removeEventListener('popstate', syncPage)
+  window.removeEventListener('hashchange', syncPage)
+})
 </script>
 
 <template>
   <a class="skip-link" href="#main-content">Skip to content</a>
-  <div class="portfolio-layout">
-    <aside class="profile-panel panel" aria-label="Profile">
-      <button class="contact-toggle" :aria-label="detailsOpen ? 'Hide details' : 'Show details'" :aria-expanded="detailsOpen" aria-controls="profile-details" @click="detailsOpen = !detailsOpen"><span>{{ detailsOpen ? 'Hide details' : 'Show details' }}</span><Icon name="chevron" /></button>
-      <div class="profile-intro"><div class="avatar" aria-hidden="true"><span>{{ profile.initials }}</span><i></i></div><div><h1>{{ profile.name }}</h1><p class="role-badge">{{ profile.role }}</p></div></div>
-      <div class="theme-control">
-        <span :class="{ selected: !isDark }">Light</span>
-        <button class="theme-switch" type="button" role="switch" aria-label="Dark mode" :aria-checked="isDark" :title="isDark ? 'Switch to light mode' : 'Switch to dark mode'" @click="toggleTheme">
-          <span class="theme-thumb"><Icon :name="isDark ? 'moon' : 'sun'" /></span>
-        </button>
-        <span :class="{ selected: isDark }">Dark</span>
+  <div class="site-layout">
+    <aside class="sidebar" aria-label="Profile and navigation">
+      <div class="sidebar-brand">
+        <h1>{{ profile.name }}</h1>
+        <p>{{ profile.role }}</p>
       </div>
-      <div id="profile-details" class="profile-details" :class="{ expanded: detailsOpen }">
-        <div class="divider"></div>
-        <ul class="contact-list">
-          <li><span class="icon-box"><Icon name="mail" /></span><div><span class="eyebrow">Email</span><a :href="`mailto:${profile.email}`">{{ profile.email }}</a></div></li>
-          <li><span class="icon-box"><Icon name="linkedin" /></span><div><span class="eyebrow">LinkedIn</span><a :href="profile.linkedin" target="_blank" rel="noopener noreferrer">linkedin.com/in/alisa-zhu/</a></div></li>
-          <li v-if="profile.phone"><span class="icon-box"><Icon name="phone" /></span><div><span class="eyebrow">Phone</span><a :href="`tel:${profile.phone}`">{{ profile.phone }}</a></div></li>
-          <li><span class="icon-box"><Icon name="school" /></span><div><span class="eyebrow">Education</span><span>MSBA at UCLA Anderson</span></div></li>
-          <li><span class="icon-box"><Icon name="github" /></span><div><span class="eyebrow">GitHub</span><a :href="profile.github" target="_blank" rel="noopener noreferrer">{{ profile.handle }}</a></div></li>
-        </ul>
-        <div class="divider"></div><p class="sidebar-note">A little about me.<br>A collection of what I’m exploring.</p>
+      <nav class="navigation" aria-label="Main navigation">
+        <a v-for="(page, index) in pages" :key="page.hash" :href="`#${page.hash}`" :class="{ active: activePage === page.hash }" :aria-current="activePage === page.hash ? 'page' : undefined" @click.prevent="navigate(page.hash)">
+          <span class="nav-number" aria-hidden="true">0{{ index + 1 }}</span><span>{{ page.label }}</span>
+        </a>
+      </nav>
+      <div class="sidebar-links">
+        <a :href="`mailto:${profile.email}`"><Icon name="mail" /><span><small>Email</small>{{ profile.email }}</span></a>
+        <a :href="profile.linkedin" target="_blank" rel="noopener noreferrer"><Icon name="linkedin" /><span><small>LinkedIn</small>alisa-zhu <Icon name="arrow" /></span></a>
+        <a :href="profile.github" target="_blank" rel="noopener noreferrer"><Icon name="github" /><span><small>GitHub</small>{{ profile.handle }} <Icon name="arrow" /></span></a>
+        <p class="sidebar-education">MSBA at UCLA Anderson</p>
+        <button class="theme-toggle" type="button" :aria-pressed="isDark" @click="toggleTheme"><Icon :name="isDark ? 'sun' : 'moon'" />{{ isDark ? 'Light mode' : 'Dark mode' }}</button>
       </div>
     </aside>
-    <main id="main-content" class="content-panel panel" tabindex="-1">
-      <nav class="navigation" aria-label="Main navigation"><a v-for="page in pages" :key="page" :href="`#${page.toLowerCase()}`" :class="{ active: activePage === page }" :aria-current="activePage === page ? 'page' : undefined" @click.prevent="navigate(page)">{{ page }}</a></nav>
-      <div class="page-content" :key="activePage">
-        <header class="page-header"><h2>{{ activePage === 'About' ? 'About Me' : activePage }}</h2><span class="title-rule"></span></header>
-        <template v-if="activePage === 'About'">
-          <div class="intro-copy"><p v-for="paragraph in profile.bio" :key="paragraph">{{ paragraph }}</p></div>
-          <section class="section-block"><h3>What I’m Exploring</h3><div class="services-grid"><article v-for="interest in interests" :key="interest.title" class="service-card"><Icon :name="interest.icon" /><div><h4>{{ interest.title }}</h4><p>{{ interest.description }}</p></div></article></div></section>
-          <section class="section-block journey-card"><Icon name="school" /><div><span class="eyebrow">The next chapter</span><h4>UCLA Anderson School of Management</h4><p>Master of Science in Business Analytics</p></div></section>
-        </template>
-        <template v-else-if="activePage === 'Resume'">
+    <main id="main-content" tabindex="-1">
+      <section v-if="activePage === 'about'" class="about-page" aria-label="About Me">
+        <div class="hero-copy">
+          <p class="eyebrow">Data Analytics <span>•</span> Finance <span>•</span> Technology</p>
+          <h2>Curious about data.<br>Driven by <em>impact.</em></h2>
+          <p class="hero-description">{{ profile.heroParagraph }}</p>
+        </div>
+        <div class="hero-visual">
+          <span class="orbit" aria-hidden="true"></span>
+          <div class="campus-photo"><img :src="campusReference" alt="UCLA's Royce Hall framed by trees and blue sky" /></div>
+        </div>
+      </section>
+      <div v-else class="page-content" :key="activePage">
+        <header class="page-header"><p class="eyebrow">{{ activePage === 'experience' ? 'Background & journey' : activePage === 'skills' ? 'Tools & expertise' : 'Ideas into practice' }}</p><h2>{{ pages.find(page => page.hash === activePage)?.label }}</h2></header>
+        <template v-if="activePage === 'experience'">
           <div class="resume-actions">
             <a class="primary-button" :href="resumeUrl" target="_blank" rel="noopener noreferrer">View Resume <Icon name="arrow" /></a>
-            <a class="primary-button" :href="resumeUrl" download="Alisa_Zhu_Resume.pdf">Download Resume <Icon name="book" /></a>
+            <a class="secondary-button" :href="resumeUrl" download="Alisa_Zhu_Resume.pdf">Download PDF <Icon name="book" /></a>
           </div>
-          <section class="section-block resume-intro" aria-label="Professional summary">
-            <h3>{{ resume.name }}</h3>
+          <section class="resume-intro" aria-label="Professional summary">
             <p class="resume-title">{{ resume.title }}</p>
-            <div class="resume-contact">
-              <a :href="`mailto:${resume.email}`">{{ resume.email }}</a>
-              <a href="tel:+13366080388">{{ resume.phone }}</a>
-              <a :href="resume.linkedin" target="_blank" rel="noopener noreferrer">LinkedIn <Icon name="arrow" /></a>
-            </div>
-            <p class="resume-meta">{{ resume.location }}</p>
-            <p class="resume-meta">{{ resume.workAuthorization }}</p>
-            <p class="page-description resume-summary">{{ resume.summary }}</p>
+            <p class="page-description">{{ resume.summary }}</p>
           </section>
           <section class="section-block">
             <div class="timeline-heading"><span class="icon-box"><Icon name="school" /></span><h3>Education</h3></div>
@@ -109,6 +118,8 @@ onUnmounted(() => window.removeEventListener('popstate', syncPage))
               </li>
             </ol>
           </section>
+        </template>
+        <template v-else-if="activePage === 'skills'">
           <section class="section-block">
             <div class="timeline-heading"><span class="icon-box"><Icon name="code" /></span><h3>Technical Skills</h3></div>
             <div v-for="skill in resume.skills" :key="skill.category" class="resume-skill-group">
@@ -117,7 +128,12 @@ onUnmounted(() => window.removeEventListener('popstate', syncPage))
             </div>
           </section>
         </template>
-      </div><footer class="page-footer"><span>Made with curiosity & care.</span><span>Alisa Zhu <span class="footer-dot">•</span> Portfolio</span></footer>
+        <section v-else-if="activePage === 'projects'" class="coming-soon">
+          <span class="coming-symbol" aria-hidden="true">✧</span>
+          <h3>Coming...</h3>
+          <p>New projects will be shared here.</p>
+        </section>
+      </div>
     </main>
   </div>
 </template>

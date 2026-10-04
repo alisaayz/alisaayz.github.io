@@ -1,6 +1,6 @@
-# Alisa Zhu — Personal Portfolio
+# Alisa Zhu — Personal Website
 
-A responsive Vue 3 portfolio inspired by [codewithsadee’s vCard](https://github.com/codewithsadee/vcard-personal-portfolio): charcoal panels, gold accents, a profile sidebar, and two sections: About and Resume. The implementation and CSS illustrations are original to this project.
+A responsive Vue 3 website based on the supplied visual reference: a white canvas, blue accents, serif headline, numbered sidebar navigation, and an arch-shaped UCLA image.
 
 ## Local development
 
@@ -11,38 +11,25 @@ npm run dev
 
 ## Personalize
 
-Edit `src/portfolio.js` for the profile, biography, areas of interest, projects, and articles. Edit `src/resume.js` for the resume summary, contact information, education, professional experience, and technical skills. The Resume tab follows the site's timeline and tag styling, with View and Download buttons at the top linking to `public/Alisa_Zhu_Resume.pdf`. Update both the resume data and PDF when revising the resume. Projects and articles are clearly marked examples; replace them with real work before publishing.
+Edit `src/portfolio.js` for the name, profile tag, email, LinkedIn, GitHub, and paragraph beneath the About Me slogan. The sidebar keeps email and LinkedIn visible below the navigation.
 
-The two sections support hash links and browser back/forward. Portfolio, Blog, and Contact pages are not shown. The email links open a mail app addressed to alisa.yh.zhu@gmail.com. LinkedIn appears immediately after email in the profile. The profile education row displays MSBA at UCLA Anderson; separate Location and Program rows are omitted. The phone value is empty and its row stays hidden until a number is added. GitHub links are also available. No email form or backend is configured.
+Edit `src/resume.js` for the education, experience, and technical skills. Experience displays the summary, education, and professional history. Skills displays the technical skill groups. View Resume opens `public/Alisa_Zhu_Resume.pdf`; Download PDF downloads that same file. Update both the PDF and resume data when revising the resume. Legacy `#resume` links open Experience.
 
-The Light / Dark switch below the profile remembers the selected theme in local storage. Dark is the default; a saved choice is applied before the page paints. The control supports keyboard input and remains visible on mobile.
+Projects displays Coming... until real projects are available. The site has no Contact tab or hero call-to-action buttons.
 
-Poppins loads from Google Fonts with a sans-serif fallback. Project artwork is CSS, requiring no external images.
+The campus image is displayed from the supplied `src/assets/template-reference.png` using a CSS crop. Text and navigation are native HTML. Inter and Cormorant Garamond load from Google Fonts with local fallback fonts.
 
-## Production
+Light is the default palette; the theme toggle preserves the visitor's saved choice. Navigation supports hash links and browser back/forward, with responsive layouts and keyboard focus indicators.
+
+## Production and hosting
 
 ```sh
 npm run build
 npm run preview
 ```
 
-## Deploy to GitHub Pages
+GitHub repository: https://github.com/alisaayz/alisaayz.github.io
 
-A workflow is provided in `.github/workflows/deploy.yml`. It installs dependencies, builds the site, and publishes `dist/` on each push to `main`.
+Live site: https://alisaayz.github.io/
 
-1. Open https://github.com/alisaayz/alisaayz.github.io/settings/pages.
-2. Under **Build and deployment**, select **GitHub Actions** as the source.
-3. Commit and push the site and workflow:
-
-   ```sh
-   git add .
-   git commit -m "Build portfolio and configure GitHub Pages"
-   git push origin main
-   ```
-
-4. Wait for **Deploy portfolio to GitHub Pages** in the repository’s Actions tab to finish.
-5. Open https://alisaayz.github.io/.
-
-The repository is named `alisaayz.github.io` and serves the account's root site at `https://alisaayz.github.io/`. The workflow builds with `--base=/`, matching local development. Resume links use Vite's base URL so the PDF is served from the correct path.
-
-GitHub Pages uses the GitHub Actions source; pushes to `main` publish the built site.
+GitHub Pages uses the GitHub Actions source. The workflow in `.github/workflows/deploy.yml` builds with `--base=/` and publishes `dist/` on pushes to `main`.
