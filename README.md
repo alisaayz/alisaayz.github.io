@@ -30,7 +30,7 @@ npm run preview
 
 A workflow is provided in `.github/workflows/deploy.yml`. It installs dependencies, builds the site, and publishes `dist/` on each push to `main`.
 
-1. Open https://github.com/alisaayz/ayz.github.io/settings/pages.
+1. Open https://github.com/alisaayz/alisaayz.github.io/settings/pages.
 2. Under **Build and deployment**, select **GitHub Actions** as the source.
 3. Commit and push the site and workflow:
 
@@ -41,8 +41,8 @@ A workflow is provided in `.github/workflows/deploy.yml`. It installs dependenci
    ```
 
 4. Wait for **Deploy portfolio to GitHub Pages** in the repository’s Actions tab to finish.
-5. Open https://alisaayz.github.io/ayz.github.io/.
+5. Open https://alisaayz.github.io/.
 
-The workflow builds with `--base=/ayz.github.io/` because this repository is a project site. Local development continues to use `/`. If you rename the repository to `alisaayz.github.io` to serve at the account root, change the workflow’s build base to `/`. Update it likewise if you add a custom domain.
+The repository is named `alisaayz.github.io` and serves the account's root site at `https://alisaayz.github.io/`. The workflow builds with `--base=/`, matching local development. Resume links use Vite's base URL so the PDF is served from the correct path.
 
-The workflow has been prepared locally; it must be pushed and GitHub Pages must be enabled before the site is published.
+GitHub Pages uses the GitHub Actions source; pushes to `main` publish the built site.
