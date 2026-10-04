@@ -11,7 +11,7 @@ npm run dev
 
 ## Personalize
 
-Edit `src/portfolio.js` for the profile, biography, areas of interest, projects, and articles. Education and other layout text live in `src/App.vue`. Projects and articles are clearly marked examples; replace them with real work before publishing. The resume intentionally has no invented dates, employment history, or skill ratings.
+Edit `src/portfolio.js` for the profile, biography, areas of interest, projects, and articles. Edit `src/resume.js` for the resume summary, contact information, education, professional experience, and technical skills. The Resume tab follows the site's timeline and tag styling, with View and Download buttons at the top linking to `public/Alisa_Zhu_Resume.pdf`. Update both the resume data and PDF when revising the resume. Projects and articles are clearly marked examples; replace them with real work before publishing.
 
 The five sections support hash links and browser back/forward. Project filters and native detail dialogs work with keyboard navigation. The email links open a mail app addressed to alisa.ayz@gmail.com. The location links to UCLA Anderson’s directions for 110 Westwood Plaza, Los Angeles, CA 90095. The phone value is empty and its row stays hidden until a number is added. GitHub links and the profile URL copy button are also available. No email form or backend is configured.
 

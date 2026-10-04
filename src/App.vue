@@ -2,6 +2,7 @@
 import { computed, nextTick, onMounted, onUnmounted, ref } from 'vue'
 import Icon from './components/Icon.vue'
 import { profile, interests, projects, posts } from './portfolio.js'
+import { resume } from './resume.js'
 const pages = ['About', 'Resume', 'Portfolio', 'Blog', 'Contact']
 const resumeUrl = `${import.meta.env.BASE_URL}Alisa_Zhu_Resume.pdf`
 const pageFromHash = () => pages.find(page => page.toLowerCase() === location.hash.slice(1)) || 'About'
@@ -78,14 +79,58 @@ onUnmounted(() => { window.removeEventListener('popstate', syncPage); clearTimeo
           <section class="section-block journey-card"><Icon name="school" /><div><span class="eyebrow">The next chapter</span><h4>UCLA Anderson School of Management</h4><p>Master of Science in Business Analytics</p></div></section>
         </template>
         <template v-else-if="activePage === 'Resume'">
-          <p class="page-description">My background, learning journey, and areas of interest.</p>
           <div class="resume-actions">
             <a class="primary-button" :href="resumeUrl" target="_blank" rel="noopener noreferrer">View Resume <Icon name="arrow" /></a>
             <a class="primary-button" :href="resumeUrl" download="Alisa_Zhu_Resume.pdf">Download Resume <Icon name="book" /></a>
           </div>
-          <section class="section-block"><div class="timeline-heading"><span class="icon-box"><Icon name="school" /></span><h3>Education</h3></div><ol class="timeline"><li><h4>UCLA Anderson School of Management</h4><span class="timeline-label">Master of Science in Business Analytics</span><p>MSBA student</p></li></ol></section>
-          <section class="section-block"><div class="timeline-heading"><span class="icon-box"><Icon name="book" /></span><h3>Experience</h3></div><div class="empty-state"><h4>More of my story, coming soon.</h4><p>This space will feature professional experience, internships, and academic projects.</p></div></section>
-          <section class="section-block"><h3>Areas of Interest</h3><div class="interest-tags"><span v-for="interest in interests" :key="interest.title">{{ interest.title }}</span></div></section>
+          <section class="section-block resume-intro" aria-label="Professional summary">
+            <h3>{{ resume.name }}</h3>
+            <p class="resume-title">{{ resume.title }}</p>
+            <div class="resume-contact">
+              <a :href="`mailto:${resume.email}`">{{ resume.email }}</a>
+              <a href="tel:+13366080388">{{ resume.phone }}</a>
+              <a :href="resume.linkedin" target="_blank" rel="noopener noreferrer">LinkedIn <Icon name="arrow" /></a>
+            </div>
+            <p class="resume-meta">{{ resume.location }}</p>
+            <p class="resume-meta">{{ resume.workAuthorization }}</p>
+            <p class="page-description resume-summary">{{ resume.summary }}</p>
+          </section>
+          <section class="section-block">
+            <div class="timeline-heading"><span class="icon-box"><Icon name="school" /></span><h3>Education</h3></div>
+            <ol class="timeline resume-timeline">
+              <li v-for="education in resume.education" :key="education.school">
+                <h4>{{ education.school }}</h4>
+                <p class="resume-meta">{{ education.location }}</p>
+                <span class="timeline-label">{{ education.degree }}</span>
+                <p class="resume-dates">{{ education.dates }}</p>
+                <p class="resume-coursework"><strong>Coursework:</strong> {{ education.courses }}</p>
+              </li>
+            </ol>
+          </section>
+          <section class="section-block">
+            <div class="timeline-heading"><span class="icon-box"><Icon name="book" /></span><h3>Professional Experience</h3></div>
+            <ol class="timeline resume-timeline">
+              <li v-for="experience in resume.experience" :key="experience.company">
+                <h4>{{ experience.company }}</h4>
+                <p class="resume-meta">{{ experience.location }}</p>
+                <div v-for="role in experience.roles" :key="role.title" class="resume-role">
+                  <span class="timeline-label">{{ role.title }}</span>
+                  <p class="resume-dates">{{ role.dates }}</p>
+                </div>
+                <div v-for="(group, index) in experience.groups" :key="index" class="resume-achievements">
+                  <h5 v-if="group.title">{{ group.title }}</h5>
+                  <ul class="resume-bullets"><li v-for="bullet in group.bullets" :key="bullet">{{ bullet }}</li></ul>
+                </div>
+              </li>
+            </ol>
+          </section>
+          <section class="section-block">
+            <div class="timeline-heading"><span class="icon-box"><Icon name="code" /></span><h3>Technical Skills</h3></div>
+            <div v-for="skill in resume.skills" :key="skill.category" class="resume-skill-group">
+              <h4>{{ skill.category }}</h4>
+              <div class="interest-tags"><span v-for="item in skill.items" :key="item">{{ item }}</span></div>
+            </div>
+          </section>
         </template>
         <template v-else-if="activePage === 'Portfolio'">
           <p class="page-description">A space for exploring data, asking questions, and sharing discoveries.</p><p class="sample-note"><span></span>Sample projects · Real work will be added here.</p>
