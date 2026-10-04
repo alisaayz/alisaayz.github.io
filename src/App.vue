@@ -3,6 +3,7 @@ import { computed, nextTick, onMounted, onUnmounted, ref } from 'vue'
 import Icon from './components/Icon.vue'
 import { profile, interests, projects, posts } from './portfolio.js'
 const pages = ['About', 'Resume', 'Portfolio', 'Blog', 'Contact']
+const resumeUrl = `${import.meta.env.BASE_URL}Alisa_Zhu_Resume.pdf`
 const pageFromHash = () => pages.find(page => page.toLowerCase() === location.hash.slice(1)) || 'About'
 const activePage = ref(pageFromHash())
 const detailsOpen = ref(false)
@@ -78,6 +79,10 @@ onUnmounted(() => { window.removeEventListener('popstate', syncPage); clearTimeo
         </template>
         <template v-else-if="activePage === 'Resume'">
           <p class="page-description">My background, learning journey, and areas of interest.</p>
+          <div class="resume-actions">
+            <a class="primary-button" :href="resumeUrl" target="_blank" rel="noopener noreferrer">View Resume <Icon name="arrow" /></a>
+            <a class="primary-button" :href="resumeUrl" download="Alisa_Zhu_Resume.pdf">Download Resume <Icon name="book" /></a>
+          </div>
           <section class="section-block"><div class="timeline-heading"><span class="icon-box"><Icon name="school" /></span><h3>Education</h3></div><ol class="timeline"><li><h4>UCLA Anderson School of Management</h4><span class="timeline-label">Master of Science in Business Analytics</span><p>MSBA student</p></li></ol></section>
           <section class="section-block"><div class="timeline-heading"><span class="icon-box"><Icon name="book" /></span><h3>Experience</h3></div><div class="empty-state"><h4>More of my story, coming soon.</h4><p>This space will feature professional experience, internships, and academic projects.</p></div></section>
           <section class="section-block"><h3>Areas of Interest</h3><div class="interest-tags"><span v-for="interest in interests" :key="interest.title">{{ interest.title }}</span></div></section>

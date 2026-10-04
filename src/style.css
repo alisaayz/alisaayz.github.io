@@ -137,6 +137,7 @@ h4{font-size:15px;font-weight:600}
 .contact-hero p{max-width:350px;margin:auto;color:#b1b1bb;font-size:12px;line-height:1.9}
 .primary-button{display:inline-flex;align-items:center;gap:11px;padding:14px 20px;margin-top:25px;font-size:12px;background:var(--gold);color:#26221a;border-radius:10px;font-weight:500}
 .primary-button svg{width:17px;height:17px}
+.resume-actions{display:flex;flex-wrap:wrap;gap:12px}
 .contact-link-card{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:24px 0;border-bottom:1px solid #38383a}
 .contact-link-card a{font-size:13px;display:block;margin-top:6px;overflow-wrap:anywhere}
 .icon-button{width:38px;height:38px;background:#303032;border-radius:10px;display:grid;place-items:center;color:var(--gold);flex-shrink:0}
