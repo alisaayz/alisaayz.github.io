@@ -4,7 +4,17 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ayz.github.io</title>
+    <meta name="theme-color" content="#1e1e1f" />
+    <script>
+      // Apply the saved theme before the page paints, retaining dark as the default.
+      try {
+        const theme = localStorage.getItem('portfolio-theme') === 'light' ? 'light' : 'dark'
+        document.documentElement.dataset.theme = theme
+        document.querySelector('meta[name="theme-color"]').content = theme === 'light' ? '#ffffff' : '#1e1e1f'
+      } catch { document.documentElement.dataset.theme = 'dark' }
+    </script>
+    <meta name="description" content="Alisa Zhu — MSBA student at UCLA Anderson School of Management. Explore my background, projects, and journey in business analytics." />
+    <title>Alisa Zhu · Business Analytics</title>
   </head>
   <body>
     <div id="app"></div>
