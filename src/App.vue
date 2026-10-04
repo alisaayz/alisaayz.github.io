@@ -18,13 +18,13 @@ const pageFromHash = () => {
   return pages.some(page => page.hash === hash) ? hash : 'about'
 }
 const activePage = ref(pageFromHash())
-const isDark = ref(document.documentElement.dataset.theme === 'dark')
-function toggleTheme() {
-  isDark.value = !isDark.value
+const systemTheme = window.matchMedia('(prefers-color-scheme: dark)')
+const isDark = ref(systemTheme.matches)
+function syncTheme() {
+  isDark.value = systemTheme.matches
   const theme = isDark.value ? 'dark' : 'light'
   document.documentElement.dataset.theme = theme
   document.querySelector('meta[name="theme-color"]')?.setAttribute('content', isDark.value ? '#111a27' : '#ffffff')
-  try { localStorage.setItem('portfolio-theme', theme) } catch { /* Theme still works without storage. */ }
 }
 function navigate(page) {
   activePage.value = page
@@ -36,10 +36,13 @@ function syncPage() {
   activePage.value = pageFromHash()
 }
 onMounted(() => {
+  syncTheme()
+  systemTheme.addEventListener('change', syncTheme)
   window.addEventListener('popstate', syncPage)
   window.addEventListener('hashchange', syncPage)
 })
 onUnmounted(() => {
+  systemTheme.removeEventListener('change', syncTheme)
   window.removeEventListener('popstate', syncPage)
   window.removeEventListener('hashchange', syncPage)
 })
@@ -61,9 +64,7 @@ onUnmounted(() => {
       <div class="sidebar-links">
         <a :href="`mailto:${profile.email}`"><Icon name="mail" /><span><small>Email</small>{{ profile.email }}</span></a>
         <a :href="profile.linkedin" target="_blank" rel="noopener noreferrer"><Icon name="linkedin" /><span><small>LinkedIn</small>alisa-zhu <Icon name="arrow" /></span></a>
-        <a :href="profile.github" target="_blank" rel="noopener noreferrer"><Icon name="github" /><span><small>GitHub</small>{{ profile.handle }} <Icon name="arrow" /></span></a>
-        <p class="sidebar-education">MSBA at UCLA Anderson</p>
-        <button class="theme-toggle" type="button" :aria-pressed="isDark" @click="toggleTheme"><Icon :name="isDark ? 'sun' : 'moon'" />{{ isDark ? 'Light mode' : 'Dark mode' }}</button>
+        <p class="theme-status"><Icon :name="isDark ? 'moon' : 'sun'" /><span>System theme</span></p>
       </div>
     </aside>
     <main id="main-content" tabindex="-1">
@@ -85,10 +86,6 @@ onUnmounted(() => {
             <a class="primary-button" :href="resumeUrl" target="_blank" rel="noopener noreferrer">View Resume <Icon name="arrow" /></a>
             <a class="secondary-button" :href="resumeUrl" download="Alisa_Zhu_Resume.pdf">Download PDF <Icon name="book" /></a>
           </div>
-          <section class="resume-intro" aria-label="Professional summary">
-            <p class="resume-title">{{ resume.title }}</p>
-            <p class="page-description">{{ resume.summary }}</p>
-          </section>
           <section class="section-block">
             <div class="timeline-heading"><span class="icon-box"><Icon name="school" /></span><h3>Education</h3></div>
             <ol class="timeline resume-timeline">
