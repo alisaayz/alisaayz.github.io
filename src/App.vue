@@ -55,9 +55,7 @@ onUnmounted(() => { window.removeEventListener('popstate', syncPage); clearTimeo
           <li><span class="icon-box"><Icon name="mail" /></span><div><span class="eyebrow">Email</span><a :href="`mailto:${profile.email}`">{{ profile.email }}</a></div></li>
           <li><span class="icon-box"><Icon name="linkedin" /></span><div><span class="eyebrow">LinkedIn</span><a :href="profile.linkedin" target="_blank" rel="noopener noreferrer">linkedin.com/in/alisa-zhu/</a></div></li>
           <li v-if="profile.phone"><span class="icon-box"><Icon name="phone" /></span><div><span class="eyebrow">Phone</span><a :href="`tel:${profile.phone}`">{{ profile.phone }}</a></div></li>
-          <li><span class="icon-box"><Icon name="location" /></span><div><span class="eyebrow">Location</span><a :href="profile.location.url" target="_blank" rel="noopener noreferrer">{{ profile.location.city }}</a></div></li>
-          <li><span class="icon-box"><Icon name="school" /></span><div><span class="eyebrow">Education</span><span>UCLA Anderson<br>School of Management</span></div></li>
-          <li><span class="icon-box"><Icon name="chart" /></span><div><span class="eyebrow">Program</span><span>Master of Science in<br>Business Analytics</span></div></li>
+          <li><span class="icon-box"><Icon name="school" /></span><div><span class="eyebrow">Education</span><span>MSBA at UCLA Anderson</span></div></li>
           <li><span class="icon-box"><Icon name="github" /></span><div><span class="eyebrow">GitHub</span><a :href="profile.github" target="_blank" rel="noopener noreferrer">{{ profile.handle }}</a></div></li>
         </ul>
         <div class="divider"></div><a class="sidebar-cta" href="#contact" @click.prevent="navigate('Contact')">Let’s connect <Icon name="arrow" /></a><p class="sidebar-note">A little about me.<br>A collection of what I’m exploring.</p>
@@ -130,7 +128,6 @@ onUnmounted(() => { window.removeEventListener('popstate', syncPage); clearTimeo
           <p class="page-description">Good things start with a conversation.</p><div class="contact-hero"><div class="contact-symbol"><Icon name="chat" /></div><span class="eyebrow">Ideas. Questions. New perspectives.</span><h3>Let’s connect<br>and <em>explore.</em></h3><p>Have a question or an idea to share? Send me an email — I’d love to hear from you.</p><a class="primary-button" :href="`mailto:${profile.email}`"><Icon name="mail" /> Send me an email <Icon name="arrow" /></a></div>
           <div class="contact-link-card"><div><span class="eyebrow">Email</span><a :href="`mailto:${profile.email}`">{{ profile.email }}</a></div><Icon name="mail" /></div>
           <div class="contact-link-card"><div><span class="eyebrow">LinkedIn</span><a :href="profile.linkedin" target="_blank" rel="noopener noreferrer">linkedin.com/in/alisa-zhu/</a></div><Icon name="linkedin" /></div>
-          <div class="contact-link-card"><div><span class="eyebrow">Location</span><a :href="profile.location.url" target="_blank" rel="noopener noreferrer">{{ profile.location.city }}</a></div><Icon name="location" /></div>
           <div class="contact-link-card"><div><span class="eyebrow">GitHub profile</span><a :href="profile.github" target="_blank" rel="noopener noreferrer">github.com/{{ profile.handle }}</a></div><button class="icon-button" aria-label="Copy GitHub profile link" @click="copyLink"><Icon name="copy" /></button></div><p class="copy-status" role="status">{{ copyStatus }}</p>
         </template>
       </div><footer class="page-footer"><span>Made with curiosity & care.</span><span>Alisa Zhu <span class="footer-dot">•</span> Portfolio</span></footer>
