@@ -46,3 +46,30 @@ main{margin-left:250px;min-height:100vh}main:focus{outline:none}.about-page{disp
 @media(max-width:1000px){.captioned-gallery{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:800px),(orientation:portrait){.sidebar-appearance{display:none}.mobile-appearance-footer{display:flex;justify-content:center;padding:24px 25px 32px;border-top:1px solid var(--line);background:var(--paper)}.mobile-appearance-footer .appearance-control{width:240px}.mobile-appearance-footer .theme-status{margin:0}.mobile-appearance-footer .appearance-options button{padding:11px}}
 @media(max-width:420px){.captioned-gallery{gap:12px}.gallery-card figcaption{padding:10px;font-size:10px}}
+
+/* Shared type scale keeps content legible and headings distinct across tabs. */
+:root{font-size:16px}
+.about-story,.hero-description,.page-description,.resume-bullets,.education-list,.resume-coursework{font-size:16px;font-weight:400;line-height:1.75}
+.about-story{max-width:74ch}.about-story p+p{margin-top:20px}
+h3,.personal-card h3,.cat-section h3,.wild-section h3,.timeline-heading h3{font-size:24px;font-weight:600;line-height:1.35;letter-spacing:-.3px}
+h4,.education-heading h4,.resume-skill-group h4{font-size:20px;font-weight:600;line-height:1.4}
+.resume-achievements h5,.education-subheading,.coursework-group h6{font-size:17px;font-weight:600;line-height:1.5;color:var(--ink)}
+.resume-achievements h5{margin-bottom:8px}
+.timeline-label{font-size:16px;font-weight:500;line-height:1.6;margin-top:7px}
+.resume-meta,.resume-dates{font-size:14px;line-height:1.6;margin-top:5px}
+.coursework-status{font-size:13px;font-weight:500;padding:4px 10px}
+.interest-tags span,.language-list,.hobby-grid li{font-size:16px;line-height:1.5}
+.gallery-card figcaption{font-size:14px;font-weight:400;line-height:1.6;padding:12px 14px}
+.coming-soon p{font-size:16px;line-height:1.7}
+.primary-button,.secondary-button{font-size:15px;font-weight:500;padding:13px 22px}
+.eyebrow{font-size:12px;letter-spacing:2px;line-height:1.7}
+.navigation a{font-size:14px;line-height:1.5}.nav-number{font-size:12px}
+.sidebar-links>a{font-size:13px;line-height:1.5}.sidebar-links small{font-size:10px;letter-spacing:.8px}
+.theme-status,.appearance-options button{font-size:12px}
+.section-block{margin-top:32px}.timeline{padding-top:24px}.resume-timeline>li+li{margin-top:32px}.resume-bullets li+li{margin-top:8px}.resume-achievements{margin-top:16px}
+.coursework-group{padding:18px}.education-list li+li{margin-top:6px}.education-detail{margin-top:24px}
+.resume-skill-group{margin-top:22px;padding:22px 24px}.interest-tags{gap:8px;margin-top:14px}.interest-tags span{padding:8px 12px}
+.hobby-grid li{min-height:58px;padding:10px;gap:8px}.language-list div{padding:9px 0}
+@media(max-width:800px){.navigation{gap:8px 20px}.navigation a{font-size:14px;gap:8px}.sidebar-links>a{font-size:14px}.page-content{padding:36px 26px 48px}.eyebrow{font-size:11px;letter-spacing:1.5px}}
+@media(max-width:560px){.page-header h2{font-size:42px}.page-header{margin-bottom:24px}.page-content{padding:30px 22px 42px}.timeline{padding-left:20px;margin-left:12px}.timeline>li:before{left:-24px}.timeline-label{font-size:16px}.resume-meta,.resume-dates{font-size:14px}.coursework-group{padding:16px}.resume-skill-group{padding:18px}.personal-card{padding:20px}.captioned-gallery{grid-template-columns:1fr;max-width:360px;gap:16px}.gallery-card figcaption{font-size:14px}.education-heading h4{font-size:19px}.primary-button,.secondary-button{font-size:14px;padding:12px 18px}.hero-copy h2{font-size:42px}.about-page{gap:26px}}
+@media(min-width:801px){.sidebar{padding-left:28px;padding-right:18px}.navigation a.active:before{left:-28px}}
