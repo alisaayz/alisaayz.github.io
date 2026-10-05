@@ -5,8 +5,8 @@ import { profile } from './portfolio.js'
 import { resume } from './resume.js'
 import headshot from './assets/personal/headshot-expanded.png'
 import signature from './assets/personal/signature-transparent.png'
-import summerSeries from './assets/personal/summer-series.jpg'
-import wildCollage from './assets/personal/in-the-wild.png'
+import summerSeries from './assets/personal/summer-series-private.png'
+import wildCollage from './assets/personal/travel-grid-private.png'
 import onoPhoto from './assets/personal/ono.jpg'
 import yuzuPhoto from './assets/personal/yuzu.jpg'
 import uclaLogo from './assets/logos/ucla.svg'
@@ -19,6 +19,13 @@ const pages = [
   { label: 'Projects', hash: 'projects' },
   { label: 'Skills', hash: 'skills' },
   { label: 'Beyond the Resume', hash: 'beyond' },
+]
+const galleryPhotos = [
+  { caption: 'Traveling in Shangri-La City', alt: 'Alisa with arms spread by a lake in Shangri-La City', tile: 0 },
+  { caption: 'Traveling at Eigergletscher, Switzerland', alt: 'Alisa traveling at Eigergletscher in Switzerland', tile: 1 },
+  { caption: 'Beach day orientation at UCLA', alt: 'Alisa smiling at UCLA beach day orientation', tile: 2 },
+  { caption: 'Golfing at Furry Creek, Vancouver', alt: 'Alisa golfing at Furry Creek near Vancouver', tile: 3 },
+  { caption: 'Presentation at Goldman Sachs Summer Series Asia', alt: 'Alisa presenting at Goldman Sachs Summer Series Asia, with other faces softly blurred', tile: null },
 ]
 const resumeUrl = `${import.meta.env.BASE_URL}Alisa_Zhu_Resume.pdf`
 const pageFromHash = () => {
@@ -80,7 +87,7 @@ onUnmounted(() => {
       <div class="sidebar-links">
         <a :href="`mailto:${profile.email}`"><Icon name="mail" /><span><small>Email</small>{{ profile.email }}</span></a>
         <a :href="profile.linkedin" target="_blank" rel="noopener noreferrer"><Icon name="linkedin" /><span><small>LinkedIn</small>alisa-zhu <Icon name="arrow" /></span></a>
-        <div class="appearance-control">
+        <div class="appearance-control sidebar-appearance">
           <p class="theme-status"><Icon :name="isDark ? 'moon' : 'sun'" /><span>Appearance</span></p>
           <div class="appearance-options" role="group" aria-label="Appearance">
             <button v-for="option in ['system', 'light', 'dark']" :key="option" type="button" :aria-pressed="themePreference === option" @click="chooseTheme(option)">{{ option }}</button>
@@ -172,7 +179,12 @@ onUnmounted(() => {
             <section class="personal-card"><h3>Languages</h3><dl class="language-list"><div><dt>English</dt><dd>Native</dd></div><div><dt>Chinese</dt><dd>Native</dd></div><div><dt>Spanish</dt><dd>Beginner</dd></div></dl></section>
             <section class="personal-card"><h3>Hobbies</h3><ul class="hobby-grid"><li v-for="hobby in [{ name: 'Golf', symbol: '⛳' }, { name: 'Skiing', symbol: '⛷' }, { name: 'Incense crafting', symbol: '✧' }, { name: 'Surfing', symbol: '≈' }]" :key="hobby.name"><span class="hobby-symbol" aria-hidden="true">{{ hobby.symbol }}</span><span>{{ hobby.name }}</span></li></ul></section>
           </div>
-          <section class="wild-section"><h3>In the Wild</h3><div class="wild-mosaic"><img class="wild-collage" :src="wildCollage" alt="A collage of Alisa exploring a lakeside landscape, visiting snowy Jungfraujoch, enjoying a UCLA event, playing golf, and attending class" loading="lazy" /><img class="wild-event-photo" :src="summerSeries" alt="A group presentation at the Goldman Sachs Summer Series Asia 2023 event" loading="lazy" /></div></section>
+          <section class="wild-section"><h3>In the Wild</h3><div class="captioned-gallery">
+            <figure v-for="photo in galleryPhotos" :key="photo.caption" class="gallery-card">
+              <div class="gallery-image"><img v-if="photo.tile !== null" :src="wildCollage" :alt="photo.alt" :class="`gallery-tile gallery-tile-${photo.tile}`" loading="lazy" /><img v-else :src="summerSeries" :alt="photo.alt" class="gallery-event" loading="lazy" /></div>
+              <figcaption>{{ photo.caption }}</figcaption>
+            </figure>
+          </div></section>
           <section class="cat-section"><h3>Meet Ono &amp; Yuzu</h3><div class="cat-grid">
             <figure class="cat-card"><img :src="onoPhoto" alt="Ono, my darker-colored cat, playing on the carpet" loading="lazy" /><figcaption>Ono</figcaption></figure>
             <figure class="cat-card"><img :src="yuzuPhoto" alt="Yuzu, my yellow-colored cat, wearing pink headphones" loading="lazy" /><figcaption>Yuzu</figcaption></figure>
@@ -184,6 +196,14 @@ onUnmounted(() => {
           <p>New projects will be shared here.</p>
         </section>
       </div>
+      <footer class="mobile-appearance-footer">
+        <div class="appearance-control">
+          <p class="theme-status"><Icon :name="isDark ? 'moon' : 'sun'" /><span>Appearance</span></p>
+          <div class="appearance-options" role="group" aria-label="Appearance">
+            <button v-for="option in ['system', 'light', 'dark']" :key="option" type="button" :aria-pressed="themePreference === option" @click="chooseTheme(option)">{{ option }}</button>
+          </div>
+        </div>
+      </footer>
     </main>
   </div>
 </template>
