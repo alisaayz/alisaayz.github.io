@@ -49,7 +49,7 @@ function atPageBottom() {
 }
 function atPageTop() { return window.scrollY <= 4 }
 function ignoreGesture(target) {
-  return target instanceof Element && !!target.closest('.sidebar, .appearance-control, input, textarea, select')
+  return target instanceof Element && !!target.closest('.appearance-control, input, textarea, select')
 }
 function capturePagePane(source) {
   const pane = document.createElement('div')
@@ -174,7 +174,7 @@ onMounted(() => {
   systemTheme.addEventListener('change', syncTheme)
   window.addEventListener('popstate', syncPage)
   window.addEventListener('hashchange', syncPage)
-  window.addEventListener('wheel', handleWheel, { passive: true })
+  window.addEventListener('wheel', handleWheel, { passive: true, capture: true })
   window.addEventListener('touchstart', handleTouchStart, { passive: true })
   window.addEventListener('touchend', handleTouchEnd, { passive: true })
   window.addEventListener('touchcancel', cancelTouch, { passive: true })
@@ -183,7 +183,7 @@ onUnmounted(() => {
   systemTheme.removeEventListener('change', syncTheme)
   window.removeEventListener('popstate', syncPage)
   window.removeEventListener('hashchange', syncPage)
-  window.removeEventListener('wheel', handleWheel)
+  window.removeEventListener('wheel', handleWheel, true)
   window.removeEventListener('touchstart', handleTouchStart)
   window.removeEventListener('touchend', handleTouchEnd)
   window.removeEventListener('touchcancel', cancelTouch)
