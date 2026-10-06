@@ -1,7 +1,7 @@
 <script setup>
 import { computed, nextTick, onMounted, onUnmounted, ref } from 'vue'
 import Icon from './components/Icon.vue'
-import { createBoundaryGesture } from './scrollGesture.js'
+import { createBoundaryProgress } from './scrollGesture.js'
 import { profile } from './portfolio.js'
 import { resume } from './resume.js'
 import headshot from './assets/personal/headshot-button-down.png'
@@ -42,8 +42,9 @@ const previousPage = computed(() => pages[activeIndex.value - 1])
 const nextPage = computed(() => pages[activeIndex.value + 1])
 const turningTo = ref(null)
 let activeSlide = null
-const recognizeWheelStroke = createBoundaryGesture()
-let lastNavigationAt = performance.now()
+const accumulateBoundaryScroll = createBoundaryProgress()
+const boundaryProgress = ref(0)
+const boundaryDirection = ref(1)
 let touchStart = null
 function atPageBottom() {
   return window.scrollY + window.innerHeight >= document.documentElement.scrollHeight - 4
@@ -107,31 +108,45 @@ async function turnPage(direction = 1) {
   turningTo.value = null
   document.getElementById('main-content')?.focus({ preventScroll: true })
 }
-function handleWheel(event) {
-  const delta = event.deltaY * (event.deltaMode === 1 ? 16 : event.deltaMode === 2 ? window.innerHeight : 1)
-  const direction = recognizeWheelStroke({
+function applyBoundaryScroll(delta, threshold = 240) {
+  if (turningTo.value) return
+  const direction = Math.sign(delta)
+  const destination = pages[activeIndex.value + direction]
+  const result = accumulateBoundaryScroll({
     delta,
-    time: performance.now(),
-    atEdge: delta > 0 ? atPageBottom() : atPageTop(),
-    blocked: event.ctrlKey || !!turningTo.value,
+    atEdge: direction > 0 ? atPageBottom() : atPageTop(),
+    blocked: !destination,
+    threshold,
   })
-  if (direction) turnPage(direction)
+  boundaryDirection.value = direction
+  boundaryProgress.value = result.progress
+  if (result.direction) nextTick(() => turnPage(result.direction))
+}
+function handleWheel(event) {
+  if (event.ctrlKey) return
+  const delta = event.deltaY * (event.deltaMode === 1 ? 16 : event.deltaMode === 2 ? window.innerHeight : 1)
+  if (delta) applyBoundaryScroll(delta)
 }
 function handleTouchStart(event) {
   const point = event.touches.length === 1 ? event.touches[0] : null
-  touchStart = point && !ignoreGesture(event.target) && !turningTo.value && performance.now() - lastNavigationAt > 650
-    ? { x: point.clientX, y: point.clientY, bottom: atPageBottom(), top: atPageTop() } : null
+  touchStart = point && !ignoreGesture(event.target) && !turningTo.value
+    ? { x: point.clientX, lastY: point.clientY } : null
 }
-function handleTouchEnd(event) {
-  const point = event.changedTouches[0]
-  if (touchStart && point && Math.abs(touchStart.x - point.clientX) < 80) {
-    const distance = touchStart.y - point.clientY
-    if (distance > 45 && touchStart.bottom) turnPage(1)
-    else if (distance < -45 && touchStart.top) turnPage(-1)
-  }
-  touchStart = null
+function handleTouchMove(event) {
+  const point = event.touches.length === 1 ? event.touches[0] : null
+  if (!touchStart || !point || Math.abs(touchStart.x - point.clientX) > 80) return
+  const delta = touchStart.lastY - point.clientY
+  touchStart.lastY = point.clientY
+  if (delta) applyBoundaryScroll(delta, 100)
 }
 function cancelTouch() { touchStart = null }
+function clearProgressAwayFromEdge() {
+  const atEdge = boundaryDirection.value > 0 ? atPageBottom() : atPageTop()
+  if (!atEdge && !turningTo.value) {
+    accumulateBoundaryScroll({ atEdge: false })
+    boundaryProgress.value = 0
+  }
+}
 const systemTheme = window.matchMedia('(prefers-color-scheme: dark)')
 const themePreference = ref(document.documentElement.dataset.themePreference || 'system')
 const isDark = ref(systemTheme.matches)
@@ -150,7 +165,8 @@ function chooseTheme(preference) {
 function navigate(page, duringTurn = false) {
   if (!duringTurn) { cancelSlide(); turningTo.value = null }
   touchStart = null
-  lastNavigationAt = performance.now()
+  boundaryProgress.value = 0
+  accumulateBoundaryScroll({ atEdge: false })
   activePage.value = page
   history.pushState(null, '', `#${page}`)
   window.scrollTo({ top: 0, behavior: 'instant' })
@@ -159,8 +175,9 @@ function syncPage() {
   if (location.hash === '#main-content') return
   cancelSlide()
   turningTo.value = null
+  boundaryProgress.value = 0
+  accumulateBoundaryScroll({ atEdge: false })
   activePage.value = pageFromHash()
-  lastNavigationAt = performance.now()
   window.scrollTo({ top: 0, behavior: 'instant' })
 }
 onMounted(() => {
@@ -170,7 +187,9 @@ onMounted(() => {
   window.addEventListener('hashchange', syncPage)
   window.addEventListener('wheel', handleWheel, { passive: true, capture: true })
   window.addEventListener('touchstart', handleTouchStart, { passive: true })
-  window.addEventListener('touchend', handleTouchEnd, { passive: true })
+  window.addEventListener('touchmove', handleTouchMove, { passive: true })
+  window.addEventListener('touchend', cancelTouch, { passive: true })
+  window.addEventListener('scroll', clearProgressAwayFromEdge, { passive: true })
   window.addEventListener('touchcancel', cancelTouch, { passive: true })
 })
 onUnmounted(() => {
@@ -179,7 +198,9 @@ onUnmounted(() => {
   window.removeEventListener('hashchange', syncPage)
   window.removeEventListener('wheel', handleWheel, true)
   window.removeEventListener('touchstart', handleTouchStart)
-  window.removeEventListener('touchend', handleTouchEnd)
+  window.removeEventListener('touchmove', handleTouchMove)
+  window.removeEventListener('touchend', cancelTouch)
+  window.removeEventListener('scroll', clearProgressAwayFromEdge)
   window.removeEventListener('touchcancel', cancelTouch)
   cancelSlide()
 })
@@ -210,7 +231,7 @@ onUnmounted(() => {
       </div>
     </aside>
     <main id="main-content" tabindex="-1" :class="{ 'page-sliding': turningTo }">
-      <section v-if="previousPage" class="section-title-preview previous-section-preview" :aria-label="`Previous section: ${previousPage.label}`"><button type="button" @click="turnPage(-1)" :aria-label="`Return to ${previousPage.label}`">{{ previousPage.label }}</button></section>
+      <section v-if="previousPage" class="section-title-preview previous-section-preview" :aria-label="`Previous section: ${previousPage.label}`"><button type="button" @click="turnPage(-1)" :aria-label="`Return to ${previousPage.label}`">{{ previousPage.label }}</button><div class="boundary-progress" role="progressbar" aria-label="Scroll to previous section" :aria-valuenow="boundaryDirection < 0 ? Math.round(boundaryProgress * 100) : 0" aria-valuemin="0" aria-valuemax="100"><span :style="{ transform: `scaleX(${boundaryDirection < 0 ? boundaryProgress : 0})` }"></span></div></section>
       <section v-if="activePage === 'about'" class="about-page" aria-label="About Me">
         <div class="hero-copy">
           <p class="eyebrow">Data Analytics <span>•</span> Finance <span>•</span> Technology</p>
@@ -319,7 +340,7 @@ onUnmounted(() => {
           </div>
         </div>
       </footer>
-      <section v-if="nextPage" class="section-title-preview next-section-title" :aria-label="`Next section: ${nextPage.label}`"><button type="button" @click="turnPage(1)" :aria-label="`Continue to ${nextPage.label}`">{{ nextPage.label }}</button></section>
+      <section v-if="nextPage" class="section-title-preview next-section-title" :aria-label="`Next section: ${nextPage.label}`"><button type="button" @click="turnPage(1)" :aria-label="`Continue to ${nextPage.label}`">{{ nextPage.label }}</button><div class="boundary-progress" role="progressbar" aria-label="Scroll to next section" :aria-valuenow="boundaryDirection > 0 ? Math.round(boundaryProgress * 100) : 0" aria-valuemin="0" aria-valuemax="100"><span :style="{ transform: `scaleX(${boundaryDirection > 0 ? boundaryProgress : 0})` }"></span></div></section>
     </main>
 
   </div>
