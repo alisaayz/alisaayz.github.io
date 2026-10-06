@@ -86,13 +86,14 @@ async function turnPage(direction = 1) {
   const outgoing = capturePagePane(source)
   overlay.append(outgoing)
   document.body.append(overlay)
-  const slide = { overlay, animations: [] }
+  const slide = { overlay, animations: [], landingY: 0 }
   activeSlide = slide
   turningTo.value = destination
   navigate(destination.hash, true)
   await nextTick()
   if (activeSlide !== slide) return
-  if (direction < 0) window.scrollTo({ top: document.documentElement.scrollHeight, behavior: 'instant' })
+  slide.landingY = direction < 0 ? Math.max(0, document.documentElement.scrollHeight - window.innerHeight) : 0
+  window.scrollTo({ top: slide.landingY, behavior: 'instant' })
   const incoming = capturePagePane(source)
   overlay.append(incoming)
   if (!reducedMotion) {
@@ -104,8 +105,10 @@ async function turnPage(direction = 1) {
     await Promise.all(slide.animations.map(animation => animation.finished.catch(() => {})))
   }
   if (activeSlide !== slide) return
+  window.scrollTo({ top: slide.landingY, behavior: 'instant' })
   cancelSlide()
   turningTo.value = null
+  await nextTick()
   document.getElementById('main-content')?.focus({ preventScroll: true })
 }
 function applyBoundaryScroll(delta, threshold = 240) {
@@ -124,6 +127,10 @@ function applyBoundaryScroll(delta, threshold = 240) {
 }
 function handleWheel(event) {
   if (event.ctrlKey) return
+  if (turningTo.value) {
+    if (event.cancelable) event.preventDefault()
+    return
+  }
   const delta = event.deltaY * (event.deltaMode === 1 ? 16 : event.deltaMode === 2 ? window.innerHeight : 1)
   if (delta) applyBoundaryScroll(delta)
 }
@@ -133,6 +140,10 @@ function handleTouchStart(event) {
     ? { x: point.clientX, lastY: point.clientY } : null
 }
 function handleTouchMove(event) {
+  if (turningTo.value) {
+    if (event.cancelable) event.preventDefault()
+    return
+  }
   const point = event.touches.length === 1 ? event.touches[0] : null
   if (!touchStart || !point || Math.abs(touchStart.x - point.clientX) > 80) return
   const delta = touchStart.lastY - point.clientY
@@ -141,6 +152,10 @@ function handleTouchMove(event) {
 }
 function cancelTouch() { touchStart = null }
 function clearProgressAwayFromEdge() {
+  if (turningTo.value && activeSlide) {
+    if (Math.abs(window.scrollY - activeSlide.landingY) > 1) window.scrollTo({ top: activeSlide.landingY, behavior: 'instant' })
+    return
+  }
   const atEdge = boundaryDirection.value > 0 ? atPageBottom() : atPageTop()
   if (!atEdge && !turningTo.value) {
     accumulateBoundaryScroll({ atEdge: false })
@@ -185,9 +200,9 @@ onMounted(() => {
   systemTheme.addEventListener('change', syncTheme)
   window.addEventListener('popstate', syncPage)
   window.addEventListener('hashchange', syncPage)
-  window.addEventListener('wheel', handleWheel, { passive: true, capture: true })
+  window.addEventListener('wheel', handleWheel, { passive: false, capture: true })
   window.addEventListener('touchstart', handleTouchStart, { passive: true })
-  window.addEventListener('touchmove', handleTouchMove, { passive: true })
+  window.addEventListener('touchmove', handleTouchMove, { passive: false })
   window.addEventListener('touchend', cancelTouch, { passive: true })
   window.addEventListener('scroll', clearProgressAwayFromEdge, { passive: true })
   window.addEventListener('touchcancel', cancelTouch, { passive: true })
