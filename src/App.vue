@@ -29,13 +29,6 @@ const galleryPhotos = [
   { caption: 'Traveling · Shangri-La, China', alt: 'Alisa with arms spread by a lake in Shangri-La City', tile: 0 },
   { caption: 'UCLA beach day orientation · Los Angeles, United States', alt: 'Alisa smiling at UCLA beach day orientation', tile: 2 },
 ]
-const sectionPreviews = {
-  experience: { summary: 'Financial modeling, market research, and the business decisions behind my work.', detail: 'York Biotechnology · CICC Alpha · Industrial Securities' },
-  education: { summary: 'The coursework shaping my analytical and business toolkit.', detail: 'UCLA Anderson · Wake Forest University' },
-  projects: { summary: 'A space for the questions I explore and the projects I build.', detail: 'Coming soon' },
-  skills: { summary: 'The tools and methods I use to turn information into insight.', detail: 'Python · SQL · R · Equity research · Business analysis' },
-  beyond: { summary: 'A little of life outside work and study.', detail: 'Travel · Hobbies · Ono & Yuzu' },
-}
 const resumeUrl = `${import.meta.env.BASE_URL}Alisa_Zhu_Resume.pdf`
 const pageFromHash = () => {
   const hash = location.hash.slice(1)
@@ -44,60 +37,60 @@ const pageFromHash = () => {
 }
 const activePage = ref(pageFromHash())
 const activeIndex = computed(() => pages.findIndex(page => page.hash === activePage.value))
+const previousPage = computed(() => pages[activeIndex.value - 1])
 const nextPage = computed(() => pages[activeIndex.value + 1])
 const turningTo = ref(null)
-let turnTimer, finishTimer
-let edgeReadyAt = 0, lastWheelAt = 0, wheelDistance = 0, wheelGestureAllowed = false
+let turnTimer
+let lastWheelAt = 0, wheelDirection = 0, wheelGestureAllowed = false
 let lastNavigationAt = performance.now()
 let touchStart = null
 function atPageBottom() {
   return window.scrollY + window.innerHeight >= document.documentElement.scrollHeight - 4
 }
-function updateScrollEdge() {
-  if (!atPageBottom()) { edgeReadyAt = 0; wheelGestureAllowed = false; wheelDistance = 0 }
-  else if (!edgeReadyAt) edgeReadyAt = performance.now()
-}
+function atPageTop() { return window.scrollY <= 4 }
 function ignoreGesture(target) {
   return target instanceof Element && !!target.closest('.sidebar, .appearance-control, input, textarea, select')
 }
-function turnPage() {
-  if (!nextPage.value || turningTo.value) return
-  turningTo.value = { ...nextPage.value, number: activeIndex.value + 2 }
-  const destination = nextPage.value.hash
+function turnPage(direction = 1) {
+  const destination = pages[activeIndex.value + direction]
+  if (!destination || turningTo.value) return
+  turningTo.value = destination
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
   turnTimer = window.setTimeout(async () => {
-    navigate(destination, true)
+    navigate(destination.hash, true)
     await nextTick()
+    if (direction < 0) window.scrollTo({ top: document.documentElement.scrollHeight, behavior: 'instant' })
     document.getElementById('main-content')?.focus({ preventScroll: true })
-    finishTimer = window.setTimeout(() => { turningTo.value = null }, reducedMotion ? 0 : 280)
+    turningTo.value = null
   }, reducedMotion ? 0 : 300)
 }
 function handleWheel(event) {
   const now = performance.now()
-  const freshGesture = now - lastWheelAt > 240
+  const freshGesture = now - lastWheelAt > 180
   lastWheelAt = now
-  if (event.ctrlKey || ignoreGesture(event.target) || turningTo.value || now - lastNavigationAt < 900) return
-  if (event.deltaY <= 0 || !atPageBottom()) { wheelGestureAllowed = false; wheelDistance = 0; return }
-  updateScrollEdge()
+  if (event.ctrlKey || ignoreGesture(event.target) || turningTo.value || now - lastNavigationAt < 650 || !event.deltaY) return
+  const direction = Math.sign(event.deltaY)
   if (freshGesture) {
-    wheelDistance = 0
-    wheelGestureAllowed = now - edgeReadyAt > 350
+    wheelDirection = direction
+    // Capture the boundary at the START of a stroke; reaching it mid-stroke never advances.
+    wheelGestureAllowed = direction > 0 ? atPageBottom() : atPageTop()
   }
-  if (!wheelGestureAllowed) return
-  const delta = event.deltaY * (event.deltaMode === 1 ? 16 : event.deltaMode === 2 ? window.innerHeight : 1)
-  wheelDistance += delta
-  if (wheelDistance >= 140) turnPage()
+  if (!wheelGestureAllowed || direction !== wheelDirection) return
+  wheelGestureAllowed = false
+  turnPage(direction)
 }
 function handleTouchStart(event) {
-  updateScrollEdge()
-  const now = performance.now()
   const point = event.touches.length === 1 ? event.touches[0] : null
-  touchStart = point && !ignoreGesture(event.target) && atPageBottom() && now - edgeReadyAt > 350 && now - lastNavigationAt > 900
-    ? { x: point.clientX, y: point.clientY } : null
+  touchStart = point && !ignoreGesture(event.target) && !turningTo.value && performance.now() - lastNavigationAt > 650
+    ? { x: point.clientX, y: point.clientY, bottom: atPageBottom(), top: atPageTop() } : null
 }
 function handleTouchEnd(event) {
   const point = event.changedTouches[0]
-  if (touchStart && point && touchStart.y - point.clientY > 70 && Math.abs(touchStart.x - point.clientX) < 80) turnPage()
+  if (touchStart && point && Math.abs(touchStart.x - point.clientX) < 80) {
+    const distance = touchStart.y - point.clientY
+    if (distance > 45 && touchStart.bottom) turnPage(1)
+    else if (distance < -45 && touchStart.top) turnPage(-1)
+  }
   touchStart = null
 }
 function cancelTouch() { touchStart = null }
@@ -117,9 +110,7 @@ function chooseTheme(preference) {
   syncTheme()
 }
 function navigate(page, duringTurn = false) {
-  if (!duringTurn) { clearTimeout(turnTimer); clearTimeout(finishTimer); turningTo.value = null }
-  edgeReadyAt = 0
-  wheelDistance = 0
+  if (!duringTurn) { clearTimeout(turnTimer); turningTo.value = null }
   wheelGestureAllowed = false
   touchStart = null
   lastNavigationAt = performance.now()
@@ -130,10 +121,8 @@ function navigate(page, duringTurn = false) {
 function syncPage() {
   if (location.hash === '#main-content') return
   clearTimeout(turnTimer)
-  clearTimeout(finishTimer)
   turningTo.value = null
   activePage.value = pageFromHash()
-  edgeReadyAt = 0
   wheelGestureAllowed = false
   lastNavigationAt = performance.now()
   window.scrollTo({ top: 0, behavior: 'instant' })
@@ -143,7 +132,6 @@ onMounted(() => {
   systemTheme.addEventListener('change', syncTheme)
   window.addEventListener('popstate', syncPage)
   window.addEventListener('hashchange', syncPage)
-  window.addEventListener('scroll', updateScrollEdge, { passive: true })
   window.addEventListener('wheel', handleWheel, { passive: true })
   window.addEventListener('touchstart', handleTouchStart, { passive: true })
   window.addEventListener('touchend', handleTouchEnd, { passive: true })
@@ -153,13 +141,11 @@ onUnmounted(() => {
   systemTheme.removeEventListener('change', syncTheme)
   window.removeEventListener('popstate', syncPage)
   window.removeEventListener('hashchange', syncPage)
-  window.removeEventListener('scroll', updateScrollEdge)
   window.removeEventListener('wheel', handleWheel)
   window.removeEventListener('touchstart', handleTouchStart)
   window.removeEventListener('touchend', handleTouchEnd)
   window.removeEventListener('touchcancel', cancelTouch)
   clearTimeout(turnTimer)
-  clearTimeout(finishTimer)
 })
 </script>
 
@@ -187,7 +173,8 @@ onUnmounted(() => {
         </div>
       </div>
     </aside>
-    <main id="main-content" tabindex="-1">
+    <main id="main-content" tabindex="-1" :class="{ 'page-fading': turningTo }">
+      <section v-if="previousPage" class="section-title-preview previous-section-preview" :aria-label="`Previous section: ${previousPage.label}`"><button type="button" @click="turnPage(-1)" :aria-label="`Return to ${previousPage.label}`">{{ previousPage.label }}</button></section>
       <section v-if="activePage === 'about'" class="about-page" aria-label="About Me">
         <div class="hero-copy">
           <p class="eyebrow">Data Analytics <span>•</span> Finance <span>•</span> Technology</p>
@@ -296,16 +283,8 @@ onUnmounted(() => {
           </div>
         </div>
       </footer>
-      <section v-if="nextPage" class="next-section-preview" :key="`next-${activePage}`" :aria-label="`Next section: ${nextPage.label}`">
-        <div class="section-progress" aria-label="Section progress"><span v-for="(page, index) in pages" :key="page.hash" :class="{ complete: index <= activeIndex }" aria-hidden="true"></span><small>{{ activeIndex + 1 }} / {{ pages.length }}</small></div>
-        <p class="eyebrow">Next section · 0{{ activeIndex + 2 }}</p>
-        <h2>{{ nextPage.label }}</h2>
-        <p class="next-summary">{{ sectionPreviews[nextPage.hash].summary }}</p>
-        <p class="next-details">{{ sectionPreviews[nextPage.hash].detail }}</p>
-        <div class="next-section-actions"><p><span aria-hidden="true">↓</span> Scroll again to enter the next section</p><button class="secondary-button" type="button" @click="turnPage">Continue to {{ nextPage.label }} <Icon name="arrow" /></button></div>
-      </section>
-      <div v-else class="section-end"><p class="eyebrow">06 / 06 · Beyond the Resume</p><p>Thanks for getting to know me.</p><button class="secondary-button" type="button" @click="navigate('about')">Back to About Me <Icon name="arrow" /></button></div>
+      <section v-if="nextPage" class="section-title-preview next-section-title" :aria-label="`Next section: ${nextPage.label}`"><button type="button" @click="turnPage(1)" :aria-label="`Continue to ${nextPage.label}`">{{ nextPage.label }}</button></section>
     </main>
-    <Transition name="page-turn"><div v-if="turningTo" class="page-turn-overlay" role="status" aria-live="polite"><span class="eyebrow">Next section · 0{{ turningTo.number }}</span><p>{{ turningTo.label }}</p><span class="page-turn-line" aria-hidden="true"></span></div></Transition>
+
   </div>
 </template>
