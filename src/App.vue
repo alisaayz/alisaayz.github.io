@@ -1,6 +1,7 @@
 <script setup>
 import { computed, nextTick, onMounted, onUnmounted, ref } from 'vue'
 import Icon from './components/Icon.vue'
+import { createBoundaryGesture } from './scrollGesture.js'
 import { profile } from './portfolio.js'
 import { resume } from './resume.js'
 import headshot from './assets/personal/headshot-button-down.png'
@@ -41,7 +42,7 @@ const previousPage = computed(() => pages[activeIndex.value - 1])
 const nextPage = computed(() => pages[activeIndex.value + 1])
 const turningTo = ref(null)
 let activeSlide = null
-let lastWheelAt = 0, wheelDirection = 0, wheelGestureAllowed = false
+const recognizeWheelStroke = createBoundaryGesture()
 let lastNavigationAt = performance.now()
 let touchStart = null
 function atPageBottom() {
@@ -107,19 +108,14 @@ async function turnPage(direction = 1) {
   document.getElementById('main-content')?.focus({ preventScroll: true })
 }
 function handleWheel(event) {
-  const now = performance.now()
-  const freshGesture = now - lastWheelAt > 180
-  lastWheelAt = now
-  if (event.ctrlKey || ignoreGesture(event.target) || turningTo.value || now - lastNavigationAt < 650 || !event.deltaY) return
-  const direction = Math.sign(event.deltaY)
-  if (freshGesture) {
-    wheelDirection = direction
-    // Capture the boundary at the START of a stroke; reaching it mid-stroke never advances.
-    wheelGestureAllowed = direction > 0 ? atPageBottom() : atPageTop()
-  }
-  if (!wheelGestureAllowed || direction !== wheelDirection) return
-  wheelGestureAllowed = false
-  turnPage(direction)
+  const delta = event.deltaY * (event.deltaMode === 1 ? 16 : event.deltaMode === 2 ? window.innerHeight : 1)
+  const direction = recognizeWheelStroke({
+    delta,
+    time: performance.now(),
+    atEdge: delta > 0 ? atPageBottom() : atPageTop(),
+    blocked: event.ctrlKey || !!turningTo.value,
+  })
+  if (direction) turnPage(direction)
 }
 function handleTouchStart(event) {
   const point = event.touches.length === 1 ? event.touches[0] : null
@@ -153,7 +149,6 @@ function chooseTheme(preference) {
 }
 function navigate(page, duringTurn = false) {
   if (!duringTurn) { cancelSlide(); turningTo.value = null }
-  wheelGestureAllowed = false
   touchStart = null
   lastNavigationAt = performance.now()
   activePage.value = page
@@ -165,7 +160,6 @@ function syncPage() {
   cancelSlide()
   turningTo.value = null
   activePage.value = pageFromHash()
-  wheelGestureAllowed = false
   lastNavigationAt = performance.now()
   window.scrollTo({ top: 0, behavior: 'instant' })
 }
