@@ -2,7 +2,7 @@
 export function createBoundaryProgress() {
   let amount = 0
   let direction = 0
-  return ({ delta = 0, atEdge, blocked = false, threshold = 240 }) => {
+  return ({ delta = 0, atEdge, blocked = false, threshold = 600 }) => {
     if (blocked || !atEdge) {
       amount = 0
       direction = 0

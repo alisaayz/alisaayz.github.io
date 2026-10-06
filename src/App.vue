@@ -111,7 +111,7 @@ async function turnPage(direction = 1) {
   await nextTick()
   document.getElementById('main-content')?.focus({ preventScroll: true })
 }
-function applyBoundaryScroll(delta, threshold = 240) {
+function applyBoundaryScroll(delta, threshold = 600) {
   if (turningTo.value) return
   const direction = Math.sign(delta)
   const destination = pages[activeIndex.value + direction]
@@ -148,7 +148,7 @@ function handleTouchMove(event) {
   if (!touchStart || !point || Math.abs(touchStart.x - point.clientX) > 80) return
   const delta = touchStart.lastY - point.clientY
   touchStart.lastY = point.clientY
-  if (delta) applyBoundaryScroll(delta, 100)
+  if (delta) applyBoundaryScroll(delta, 220)
 }
 function cancelTouch() { touchStart = null }
 function clearProgressAwayFromEdge() {
