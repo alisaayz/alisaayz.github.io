@@ -75,3 +75,6 @@ h4,.education-heading h4,.resume-skill-group h4{font-size:20px;font-weight:600;l
 @media(min-width:801px){.sidebar{padding-left:28px;padding-right:18px}.navigation a.active:before{left:-28px}}
 
 .gallery-card,.cat-card{border:0}
+
+/* Exclude the horizontal gutter baked into the two upper photo tiles. */
+.gallery-tile-0,.gallery-tile-1{height:205%;top:0}
