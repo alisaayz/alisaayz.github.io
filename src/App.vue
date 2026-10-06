@@ -40,7 +40,7 @@ const activeIndex = computed(() => pages.findIndex(page => page.hash === activeP
 const previousPage = computed(() => pages[activeIndex.value - 1])
 const nextPage = computed(() => pages[activeIndex.value + 1])
 const turningTo = ref(null)
-let turnTimer
+let activeSlide = null
 let lastWheelAt = 0, wheelDirection = 0, wheelGestureAllowed = false
 let lastNavigationAt = performance.now()
 let touchStart = null
@@ -51,18 +51,60 @@ function atPageTop() { return window.scrollY <= 4 }
 function ignoreGesture(target) {
   return target instanceof Element && !!target.closest('.sidebar, .appearance-control, input, textarea, select')
 }
-function turnPage(direction = 1) {
+function capturePagePane(source) {
+  const pane = document.createElement('div')
+  pane.className = 'scroll-slide-pane'
+  const bounds = source.getBoundingClientRect()
+  const copy = source.cloneNode(true)
+  copy.removeAttribute('id')
+  copy.querySelectorAll('[id]').forEach(node => node.removeAttribute('id'))
+  copy.classList.remove('page-sliding')
+  copy.querySelectorAll('.page-sliding').forEach(node => node.classList.remove('page-sliding'))
+  Object.assign(copy.style, { position: 'absolute', top: `${bounds.top}px`, left: '0', margin: '0', width: `${bounds.width}px`, visibility: 'visible' })
+  pane.append(copy)
+  return pane
+}
+function cancelSlide() {
+  if (!activeSlide) return
+  activeSlide.animations.forEach(animation => animation.cancel())
+  activeSlide.overlay.remove()
+  activeSlide = null
+}
+async function turnPage(direction = 1) {
   const destination = pages[activeIndex.value + direction]
   if (!destination || turningTo.value) return
-  turningTo.value = destination
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
-  turnTimer = window.setTimeout(async () => {
-    navigate(destination.hash, true)
-    await nextTick()
-    if (direction < 0) window.scrollTo({ top: document.documentElement.scrollHeight, behavior: 'instant' })
-    document.getElementById('main-content')?.focus({ preventScroll: true })
-    turningTo.value = null
-  }, reducedMotion ? 0 : 300)
+  const fixedSidebar = getComputedStyle(document.querySelector('.sidebar')).position === 'fixed'
+  const source = fixedSidebar ? document.getElementById('main-content') : document.querySelector('.site-layout')
+  const bounds = source.getBoundingClientRect()
+  const overlay = document.createElement('div')
+  overlay.className = 'scroll-slide-overlay'
+  overlay.setAttribute('aria-hidden', 'true')
+  Object.assign(overlay.style, { left: `${bounds.left}px`, width: `${bounds.width}px` })
+  const outgoing = capturePagePane(source)
+  overlay.append(outgoing)
+  document.body.append(overlay)
+  const slide = { overlay, animations: [] }
+  activeSlide = slide
+  turningTo.value = destination
+  navigate(destination.hash, true)
+  await nextTick()
+  if (activeSlide !== slide) return
+  if (direction < 0) window.scrollTo({ top: document.documentElement.scrollHeight, behavior: 'instant' })
+  const incoming = capturePagePane(source)
+  overlay.append(incoming)
+  if (!reducedMotion) {
+    const options = { duration: 650, easing: 'cubic-bezier(.22,.7,.2,1)', fill: 'forwards' }
+    slide.animations = [
+      outgoing.animate([{ transform: 'translateY(0)' }, { transform: `translateY(${-direction * 100}%)` }], options),
+      incoming.animate([{ transform: `translateY(${direction * 100}%)` }, { transform: 'translateY(0)' }], options),
+    ]
+    await Promise.all(slide.animations.map(animation => animation.finished.catch(() => {})))
+  }
+  if (activeSlide !== slide) return
+  cancelSlide()
+  turningTo.value = null
+  document.getElementById('main-content')?.focus({ preventScroll: true })
 }
 function handleWheel(event) {
   const now = performance.now()
@@ -110,7 +152,7 @@ function chooseTheme(preference) {
   syncTheme()
 }
 function navigate(page, duringTurn = false) {
-  if (!duringTurn) { clearTimeout(turnTimer); turningTo.value = null }
+  if (!duringTurn) { cancelSlide(); turningTo.value = null }
   wheelGestureAllowed = false
   touchStart = null
   lastNavigationAt = performance.now()
@@ -120,7 +162,7 @@ function navigate(page, duringTurn = false) {
 }
 function syncPage() {
   if (location.hash === '#main-content') return
-  clearTimeout(turnTimer)
+  cancelSlide()
   turningTo.value = null
   activePage.value = pageFromHash()
   wheelGestureAllowed = false
@@ -145,7 +187,7 @@ onUnmounted(() => {
   window.removeEventListener('touchstart', handleTouchStart)
   window.removeEventListener('touchend', handleTouchEnd)
   window.removeEventListener('touchcancel', cancelTouch)
-  clearTimeout(turnTimer)
+  cancelSlide()
 })
 </script>
 
@@ -173,7 +215,7 @@ onUnmounted(() => {
         </div>
       </div>
     </aside>
-    <main id="main-content" tabindex="-1" :class="{ 'page-fading': turningTo }">
+    <main id="main-content" tabindex="-1" :class="{ 'page-sliding': turningTo }">
       <section v-if="previousPage" class="section-title-preview previous-section-preview" :aria-label="`Previous section: ${previousPage.label}`"><button type="button" @click="turnPage(-1)" :aria-label="`Return to ${previousPage.label}`">{{ previousPage.label }}</button></section>
       <section v-if="activePage === 'about'" class="about-page" aria-label="About Me">
         <div class="hero-copy">
