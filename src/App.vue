@@ -5,6 +5,7 @@ import { profile } from './portfolio.js'
 import { resume } from './resume.js'
 import headshot from './assets/personal/headshot-button-down.png'
 import signature from './assets/personal/signature-transparent.png'
+import singaporePhoto from './assets/personal/singapore-private.png'
 import summerSeries from './assets/personal/summer-series-private.png'
 import wildCollage from './assets/personal/travel-grid-private.png'
 import onoPhoto from './assets/personal/ono.jpg'
@@ -21,11 +22,12 @@ const pages = [
   { label: 'Beyond the Resume', hash: 'beyond' },
 ]
 const galleryPhotos = [
-  { caption: 'Traveling · Shangri-La, China', alt: 'Alisa with arms spread by a lake in Shangri-La City', tile: 0 },
-  { caption: 'Traveling · Eigergletscher, Switzerland', alt: 'Alisa traveling at Eigergletscher in Switzerland', tile: 1 },
-  { caption: 'UCLA beach day orientation · Los Angeles, United States', alt: 'Alisa smiling at UCLA beach day orientation', tile: 2 },
+  { caption: 'Goldman Sachs Summer Series Asia presentation · Hong Kong, China', alt: 'Alisa presenting at Goldman Sachs Summer Series Asia, with other faces softly blurred', tile: null, src: summerSeries, position: 'center top' },
   { caption: 'Golfing · Furry Creek, Vancouver, Canada', alt: 'Alisa golfing at Furry Creek near Vancouver', tile: 3 },
-  { caption: 'Goldman Sachs Summer Series Asia presentation · Hong Kong, China', alt: 'Alisa presenting at Goldman Sachs Summer Series Asia, with other faces softly blurred', tile: null },
+  { caption: 'Traveling · Eigergletscher, Switzerland', alt: 'Alisa traveling at Eigergletscher in Switzerland', tile: 1 },
+  { caption: 'Traveling · Singapore, Singapore', alt: 'Alisa traveling in Singapore by a lily pond and city skyline', tile: null, src: singaporePhoto, position: 'center 30%' },
+  { caption: 'Traveling · Shangri-La, China', alt: 'Alisa with arms spread by a lake in Shangri-La City', tile: 0 },
+  { caption: 'UCLA beach day orientation · Los Angeles, United States', alt: 'Alisa smiling at UCLA beach day orientation', tile: 2 },
 ]
 const resumeUrl = `${import.meta.env.BASE_URL}Alisa_Zhu_Resume.pdf`
 const pageFromHash = () => {
@@ -181,7 +183,7 @@ onUnmounted(() => {
           </div>
           <section class="wild-section"><h3>In the Wild</h3><div class="captioned-gallery">
             <figure v-for="photo in galleryPhotos" :key="photo.caption" class="gallery-card">
-              <div class="gallery-image"><img v-if="photo.tile !== null" :src="wildCollage" :alt="photo.alt" :class="`gallery-tile gallery-tile-${photo.tile}`" loading="lazy" /><img v-else :src="summerSeries" :alt="photo.alt" class="gallery-event" loading="lazy" /></div>
+              <div class="gallery-image"><img v-if="photo.tile !== null" :src="wildCollage" :alt="photo.alt" :class="`gallery-tile gallery-tile-${photo.tile}`" loading="lazy" /><img v-else :src="photo.src" :alt="photo.alt" class="gallery-event" :style="{ objectPosition: photo.position }" loading="lazy" /></div>
               <figcaption>{{ photo.caption }}</figcaption>
             </figure>
           </div></section>
