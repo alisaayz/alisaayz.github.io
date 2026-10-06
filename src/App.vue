@@ -21,11 +21,11 @@ const pages = [
   { label: 'Beyond the Resume', hash: 'beyond' },
 ]
 const galleryPhotos = [
-  { caption: 'Traveling in Shangri-La City', alt: 'Alisa with arms spread by a lake in Shangri-La City', tile: 0 },
-  { caption: 'Traveling at Eigergletscher, Switzerland', alt: 'Alisa traveling at Eigergletscher in Switzerland', tile: 1 },
-  { caption: 'Beach day orientation at UCLA', alt: 'Alisa smiling at UCLA beach day orientation', tile: 2 },
-  { caption: 'Golfing at Furry Creek, Vancouver', alt: 'Alisa golfing at Furry Creek near Vancouver', tile: 3 },
-  { caption: 'Presentation at Goldman Sachs Summer Series Asia', alt: 'Alisa presenting at Goldman Sachs Summer Series Asia, with other faces softly blurred', tile: null },
+  { caption: 'Traveling · Shangri-La, China', alt: 'Alisa with arms spread by a lake in Shangri-La City', tile: 0 },
+  { caption: 'Traveling · Eigergletscher, Switzerland', alt: 'Alisa traveling at Eigergletscher in Switzerland', tile: 1 },
+  { caption: 'UCLA beach day orientation · Los Angeles, United States', alt: 'Alisa smiling at UCLA beach day orientation', tile: 2 },
+  { caption: 'Golfing · Furry Creek, Vancouver, Canada', alt: 'Alisa golfing at Furry Creek near Vancouver', tile: 3 },
+  { caption: 'Goldman Sachs Summer Series Asia presentation · Hong Kong, China', alt: 'Alisa presenting at Goldman Sachs Summer Series Asia, with other faces softly blurred', tile: null },
 ]
 const resumeUrl = `${import.meta.env.BASE_URL}Alisa_Zhu_Resume.pdf`
 const pageFromHash = () => {
