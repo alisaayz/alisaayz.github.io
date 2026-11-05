@@ -20,7 +20,6 @@ export function bookGeometry(height, relative, lift = 0, tiltX = 0, tiltY = 0) {
     z: openness*.2*height,
     rx: tiltX*openness,
     ry: (-90+tiltY)*openness,
-    rz: -4.5*openness,
     spineShade: .55*openness,
     coverShade: .5*(1-openness),
     order: Math.round(100-Math.abs(relative)*4),

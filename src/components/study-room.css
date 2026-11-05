@@ -41,7 +41,7 @@
 .room-art-canvas { position: absolute; inset: 0; visibility: hidden; }
 .art-webgl .room-art-canvas { visibility: visible; }
 .art-webgl img.room-art { opacity: 0; }
-.cork-pins { position: absolute; left: 56.7%; top: 16.8%; width: 23.5%; height: 14.6%; transform: skewY(23.5deg); transform-origin: top left; pointer-events: none }
+.cork-pins { position: absolute; left: 0; top: 0; transform-origin: top left; pointer-events: none }
 .cork-print { position: absolute; width: 27%; background: #fdf2dc; padding: 2% 1.5% 3%; box-shadow: 0 2px 3px #3a221c68 }
 .cork-print::before { content: ''; position: absolute; width: 9%; aspect-ratio: 1; left: 48%; top: 5%; z-index: 1; border-radius: 50%; background: #b16a4b; box-shadow: .5px .5px 1px #371b19 }
 .cork-print .gallery-image { display: block; aspect-ratio: 1.42; background: #d6cab2 }
@@ -279,6 +279,7 @@
 
 /* One room stage: the inspection UI sits over the moving camera, not over a new room image. */
 .room-stage { transition-duration:.66s; transition-timing-function:cubic-bezier(.22,.72,.22,1); }
+@media(prefers-reduced-motion:reduce) { .room-stage { transition-duration:0s } }
 .room-inspection { position:absolute; inset:0; z-index:5; pointer-events:none; }
 .room-inspection .item-return,.room-inspection .print-focus,.in-scene-panel { pointer-events:auto; }
 .room-angle-enter-active,.room-angle-leave-active { transition:opacity .22s ease; }
@@ -294,8 +295,7 @@
 .room-globe-prop.globe-active { pointer-events:auto; }
 .room-globe-prop .study-globe.globe-interactive { width:100%; margin:0; }
 .room-live-monitor {
-  position:absolute; left:57.48%; top:34.04%; width:20.46%; height:7.15%; z-index:3;
-  transform:skewY(22.29deg); transform-origin:top left;
+  position:absolute; left:0; top:0; z-index:3; transform-origin:top left;
 }
 .room-live-monitor .monitor-browser {
   position:absolute; inset:0 auto auto 0; width:calc(100% * var(--screen-scale)); height:calc(100% * var(--screen-scale));

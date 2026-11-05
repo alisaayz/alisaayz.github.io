@@ -64,7 +64,7 @@ function draw(now) {
     const visible = Math.abs(g.x)<=width/2+1.5*g.depth
     node.style.visibility = visible ? 'visible' : 'hidden'
     if (!visible) return
-    node.style.transform = `translate3d(${g.x}px,${g.y}px,${g.z}px) rotateZ(${g.rz}deg) rotateX(${g.rx}deg) rotateY(${g.ry}deg)`
+    node.style.transform = `translate3d(${g.x}px,${g.y}px,${g.z}px) rotateX(${g.rx}deg) rotateY(${g.ry}deg)`
     node.style.zIndex = g.order
     node.style.setProperty('--spine-shade',g.spineShade)
     node.style.setProperty('--cover-shade',g.coverShade)

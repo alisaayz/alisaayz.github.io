@@ -1,6 +1,6 @@
 import { MathUtils, Mesh, MeshBasicMaterial, OrthographicCamera, PlaneGeometry, Scene, SRGBColorSpace, Texture, WebGLRenderer } from 'three'
 
-const VIEWS = {
+const CAMERA_ARCS = {
   books: [-.19, -.065], golf: [-.16, -.095], monitor: [.18, -.045],
   photos: [.19, -.055], record: [-.09, -.15], globe: [.10, -.12],
   Ono: [-.08, -.13], Yuzu: [.08, -.13],
@@ -51,7 +51,7 @@ export function createRoomRenderer(canvas, image, onVisibility) {
   const scene = new Scene()
   scene.add(new Mesh(geometry, material))
   const camera = new OrthographicCamera(-50, 50, 50, -50, .1, 300)
-  let yaw = 0, pitch = 0, frame = 0, lost = false, disposed = false
+  let yaw = 0, pitch = 0, frame = 0, lost = false, disposed = false, lastSubject
 
   function draw() {
     const radius = 120
@@ -75,10 +75,11 @@ export function createRoomRenderer(canvas, image, onVisibility) {
 
   function focus(id, immediate = false) {
     cancelAnimationFrame(frame)
-    const [nextYaw, nextPitch] = VIEWS[id] || [0, 0]
+    const [arcYaw, arcPitch] = CAMERA_ARCS[id ?? lastSubject] || [0, 0]
+    lastSubject = id
     if (immediate || lost) {
-      yaw = nextYaw
-      pitch = nextPitch
+      yaw = 0
+      pitch = 0
       if (!lost) draw()
       return
     }
@@ -86,8 +87,9 @@ export function createRoomRenderer(canvas, image, onVisibility) {
     function step(now) {
       const t = Math.min(1, (now - start) / 660)
       const mix = 1 - (1 - t) ** 3
-      yaw = MathUtils.lerp(startYaw, nextYaw, mix)
-      pitch = MathUtils.lerp(startPitch, nextPitch, mix)
+      const arc = t === 1 ? 0 : Math.sin(Math.PI * mix)
+      yaw = MathUtils.lerp(startYaw, 0, mix) + arcYaw * arc
+      pitch = MathUtils.lerp(startPitch, 0, mix) + arcPitch * arc
       draw()
       if (t < 1) frame = requestAnimationFrame(step)
     }
@@ -98,6 +100,8 @@ export function createRoomRenderer(canvas, image, onVisibility) {
     event.preventDefault()
     lost = true
     cancelAnimationFrame(frame)
+    yaw = 0
+    pitch = 0
     onVisibility(false)
   }
   function onRestored() {

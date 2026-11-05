@@ -7,6 +7,7 @@ import StudyCloseup from './StudyCloseup.vue'
 import StudyMonitor from './StudyMonitor.vue'
 import StudyPennants from './StudyPennants.vue'
 import { roomArt } from '../studyAssets.js'
+import { frontFacingMatrix, roomFaceStyle } from '../studyFraming.js'
 import './study-room.css'
 
 const emit = defineEmits(['close'])
@@ -48,7 +49,11 @@ function enterRoom() {
 }
 const motion = window.matchMedia('(prefers-reduced-motion: reduce)')
 watch(selected, object => artRenderer?.focus(object?.id, motion.matches))
-const camera = reactive({ x: 0, y: 0, scale: 1, shear: 0 })
+const neutralProjection = new DOMMatrix().toString()
+const camera = reactive({ x: 0, y: 0, scale: 1, projection: neutralProjection })
+const stageSize = ref(0)
+const corkStyle = computed(() => roomFaceStyle('photos', stageSize.value))
+const monitorStyle = computed(() => ({ ...roomFaceStyle('monitor', stageSize.value), '--screen-scale': camera.scale }))
 let shelfHeight = 0, resizeRoom
 const instantCamera = ref(false)
 const zoomPercent = computed(() => Math.round(camera.scale * 100))
@@ -62,10 +67,10 @@ const cats = reactive(['Ono','Yuzu'].map((name, i) => ({
 let pan, catDrag, timer, previousOverflow, returnTarget, previousCamera
 const stepTimers = []
 const clamp = (v, low, high) => Math.min(high, Math.max(low, v))
-const sceneTransform = computed(() => `translate(-50%, -50%) translate(${camera.x}%, ${camera.y}%) scale(${camera.scale}) skewY(${Math.atan(camera.shear)}rad)`)
+const sceneTransform = computed(() => `translate(-50%, -50%) translate(${camera.x}%, ${camera.y}%) scale(${camera.scale}) ${camera.projection}`)
 function resetCamera() {
   instantCamera.value = false
-  Object.assign(camera, { x: 0, y: 0, scale: 1, shear: 0 })
+  Object.assign(camera, { x: 0, y: 0, scale: 1, projection: neutralProjection })
 }
 function zoom(next, event) {
   const scale = clamp(next, .75, 3.4)
@@ -180,21 +185,23 @@ function frameObject() {
   const { clientWidth:w, clientHeight:h } = node.parentElement
   const size = node.offsetWidth || 1
   const settings = {
-    books: { x:12.75, y:39.8, shear:.455, spread:.14, fraction:w<=650?.91:.57 },
-    monitor: { x:67.8, y:41.42, shear:-.41, spread:.206, fraction:.83 },
-    photos: { x:68.8, y:28.8, shear:-.4348, spread:.26, fraction:.73 },
-    record: { x:51.1, y:77.4, shear:-.07, spread:.155, fraction:.43, cx:w>650?.39:.50, cy:w>650?.52:.44 },
-    golf: { x:12.4, y:61, shear:.13, spread:.15, fraction:.37 },
-    globe: { x:70.2, y:77.1, shear:0, spread:.09, fraction:.32 },
-  }[object.id] || { x:object.x, y:object.y, shear:0, spread:.12, fraction:.34, cy:w>650?.50:.42, cx:w>650?.39:.5 }
-  const { x,y,shear,spread,fraction,cx=.5,cy=.52 } = settings
+    books: { x:12.75, y:39.8, spread:.14, fraction:w<=650?.91:.57 },
+    monitor: { x:67.8, y:41.42, spread:.206, fraction:.83 },
+    photos: { x:68.8, y:28.8, spread:.26, fraction:.73 },
+    record: { x:51.1, y:76.4, spread:.155, fraction:.43, cx:w>650?.39:.50, cy:w>650?.52:.44 },
+    golf: { x:12.4, y:61, spread:.15, fraction:.37 },
+    globe: { x:70.2, y:77.1, spread:.09, fraction:.32 },
+  }[object.id] || { x:object.x, y:object.y, spread:.12, fraction:.34, cy:w>650?.50:.42, cx:w>650?.39:.5 }
+  const { x,y,spread,fraction,cx=.5,cy=.52 } = settings
   const scale = Math.min(8.2, Math.min(w*fraction,h*({ books:1.06, monitor:1.5 }[object.id] || .82))/(size*spread))
   const bookHeight = shelfHeight || Math.max(145,Math.min(h*.52,w*.79,380))
   const targetY = object.id==='books' ? h/2+bookHeight/2 : h*cy
+  const projection = frontFacingMatrix(object.id, size)
+  const anchor = projection.transformPoint({ x: (x-50)*size/100, y: (y-50)*size/100 })
   Object.assign(camera, {
-    x:(w*cx-node.offsetLeft)*100/size-(x-50)*scale,
-    y:(targetY-node.offsetTop)*100/size-((y-50)+shear*(x-50))*scale,
-    scale,shear,
+    x:(w*cx-node.offsetLeft-scale*anchor.x/anchor.w)*100/size,
+    y:(targetY-node.offsetTop-scale*anchor.y/anchor.w)*100/size,
+    scale, projection: projection.toString(),
   })
 }
 function measureShelf(value) {
@@ -202,16 +209,21 @@ function measureShelf(value) {
   if (selected.value?.id==='books') frameObject()
 }
 function previewPhoto(index) { if (selected.value?.id==='photos') closeup.value?.openPhoto(index) }
+function measureRoom() {
+  stageSize.value = stage.value.offsetWidth
+  frameObject()
+}
 function resetRoomObserver() {
-  resizeRoom = new ResizeObserver(() => frameObject())
+  measureRoom()
+  resizeRoom = new ResizeObserver(measureRoom)
   resizeRoom.observe(stage.value.parentElement)
-
+  resizeRoom.observe(stage.value)
 }
 function leaveDetail() {
   returning.value = true
   selected.value = null
   instantCamera.value = false
-  Object.assign(camera, previousCamera || { x: 0, y: 0, scale: 1, shear: 0 })
+  Object.assign(camera, previousCamera || { x: 0, y: 0, scale: 1, projection: neutralProjection })
 }
 function finishReturn() {
   returning.value = false
@@ -223,7 +235,7 @@ function escape(event) {
   else if (!returning.value) emit('close')
 }
 function pinStyle(index) {
-  return { left: `${4+index%3*32}%`, top: `${10+Math.floor(index/3)*45}%`, rotate: `${[-5,4,-3,4,-4,5][index]}deg` }
+  return { left: `${6+index%3*31}%`, top: `${12+Math.floor(index/3)*43}%`, rotate: `${[-5,4,-3,4,-4,5][index]}deg` }
 }
 onMounted(() => {
   previousOverflow = document.body.style.overflow
@@ -262,8 +274,8 @@ onUnmounted(() => {
           </div>
         </div>
 
-        <div class="cork-pins" :class="{ 'cork-active':selected?.id === 'photos' }" :inert="selected?.id !== 'photos'">
-          <button v-for="(photo, index) in galleryPhotos" :key="photo.caption" type="button" :aria-label="photo.caption" class="cork-print" :style="pinStyle(index)" @click="previewPhoto(index)">
+        <div class="cork-pins" :class="{ 'cork-active':selected?.id === 'photos' }" :style="corkStyle" :inert="selected?.id !== 'photos'">
+          <button v-for="(photo, index) in galleryPhotos" :id="`room-print-${index}`" :key="photo.caption" type="button" :aria-label="photo.caption" class="cork-print" :style="pinStyle(index)" @click="previewPhoto(index)">
             <div class="gallery-image">
               <img v-if="photo.tile !== null" :src="wildCollage" alt="" :class="`gallery-tile gallery-tile-${photo.tile}`" draggable="false" />
               <img v-else :src="photo.src" alt="" class="gallery-event" :style="{ objectPosition: photo.position }" draggable="false" />
@@ -272,7 +284,7 @@ onUnmounted(() => {
         </div>
         <StudyPennants />
         <div class="room-globe-prop" :class="{ 'globe-active':selected?.id==='globe' }"><StudyGlobe :interactive="selected?.id==='globe'" /></div>
-        <div v-if="selected?.id==='monitor'" class="room-live-monitor" :style="{ '--screen-scale':camera.scale }"><StudyMonitor /></div>
+        <div v-if="selected?.id==='monitor'" class="room-live-monitor" :style="monitorStyle"><StudyMonitor /></div>
 
         <button v-for="object in roomCloseups" v-show="!selected" :key="object.id" type="button" class="room-hotspot"
           :aria-label="object.label"
