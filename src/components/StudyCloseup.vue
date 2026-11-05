@@ -1,20 +1,26 @@
 <script setup>
 import { computed, nextTick, onMounted, ref } from 'vue'
 import { galleryPhotos, wildCollage } from '../gallery.js'
-import { recordCollection, shelfBooks } from '../study.js'
+import { catProfiles, recordCollection, shelfBooks } from '../study.js'
 import StudyGlobe from './StudyGlobe.vue'
 import StudyMonitor from './StudyMonitor.vue'
 import StudyPennants from './StudyPennants.vue'
-import roomArt from '../assets/study/room.webp'
+import { roomView } from '../studyAssets.js'
 
 const props = defineProps({ object: Object, catArt: String })
-const emit = defineEmits(['back', 'place-cat'])
-const images = import.meta.glob('../assets/study/front-*.webp', { eager:true, query:'?url', import:'default' })
-const frontImage = (id) => images[`../assets/study/front-${id}.webp`]
+const emit = defineEmits(['back'])
 const back = ref(null), photoIndex = ref(null), bookIndex = ref(null), trackIndex = ref(null)
 const currentPhoto = computed(() => galleryPhotos[photoIndex.value])
 const currentBook = computed(() => shelfBooks[bookIndex.value])
 const currentTrack = computed(() => recordCollection[trackIndex.value])
+const profile = computed(() => catProfiles[props.object.cat])
+const tilt = ref({ x: 0, y: 0 })
+const reaction = ref(0)
+function followPointer(event) {
+  if (event.pointerType !== 'mouse') return
+  const box = event.currentTarget.getBoundingClientRect()
+  tilt.value = { x: ((event.clientX-box.left)/box.width-.5)*16, y: ((event.clientY-box.top)/box.height-.5)*10 }
+}
 const backLabel = computed(() => photoIndex.value !== null ? 'Photo wall' : bookIndex.value !== null ? 'Bookshelf' : 'Room')
 function goBack() {
   if (photoIndex.value !== null) {
@@ -51,10 +57,10 @@ defineExpose({ goBack })
   <section class="item-view" :class="`item-${object.id.toLowerCase()}`" :aria-label="object.label">
     <button ref="back" class="item-return" type="button" @click="goBack">← {{ backLabel }}</button>
     <div class="item-scene">
-      <StudyMonitor v-if="object.id === 'monitor'" />
+      <StudyMonitor v-if="object.id === 'monitor'" :scene="roomView('monitor')" />
       <template v-else-if="object.id === 'photos'">
         <div class="front-cork">
-          <svg viewBox="695 180 330 218" preserveAspectRatio="none" aria-hidden="true"><image :href="roomArt" width="1254" height="1254" transform="matrix(1 -.435 0 1 0 303)" /></svg>
+          <img class="in-room-art" :src="roomView('photos')" alt="" />
           <div class="front-prints">
             <button v-for="(photo,index) in galleryPhotos" :id="`room-print-${index}`" :key="photo.caption" class="front-print"
               :style="{ '--print-angle': [-4,2,-2,3,-3,4][index]+'deg' }" type="button" :aria-label="photo.caption"
@@ -71,9 +77,9 @@ defineExpose({ goBack })
       </template>
       <template v-else-if="object.id === 'books'">
         <div class="front-shelves">
-          <svg viewBox="72 424 181 233" preserveAspectRatio="xMidYMid meet" role="img" aria-label="The two oak shelves and books from the study"><image :href="roomArt" width="1254" height="1254" transform="matrix(1 .455 0 1 0 -44)" /></svg>
+          <img class="in-room-art" :src="roomView('books')" alt="Two oak shelves in the study, each holding five books" />
           <button v-for="(book,index) in shelfBooks" :id="`room-book-${index}`" :key="index" class="shelf-book" type="button"
-            :style="{ left: 16+index%5*12+'%', top: (index<5 ? 7 : 49)+'%' }"
+            :style="{ left: 24.1+index%5*10.05+'%', top: (index<5 ? 20.1 : 52.8)+'%' }"
             :aria-label="book.title || `Book slot ${index+1}`" :tabindex="currentBook ? -1 : 0" @click="openBook(index)">
             <span class="book-tab">{{ book.title || `Book ${index+1}` }}</span>
           </button>
@@ -83,7 +89,8 @@ defineExpose({ goBack })
         </div>
       </template>
       <div v-else-if="object.id === 'record'" class="listening-station">
-        <img class="record-front" :src="frontImage('record')" alt="The study's turntable and oak table seen from the front" />
+        <img class="in-room-art" :src="roomView('record')" alt="The turntable on its oak table inside the study" />
+        <StudyPennants scene="record" />
         <div class="record-selection">
           <h3>Choose a record</h3>
           <p v-if="!recordCollection.length" class="no-records">No records added yet.</p>
@@ -91,16 +98,26 @@ defineExpose({ goBack })
           <iframe v-if="recordUrl(currentTrack)" :key="currentTrack.url" :src="recordUrl(currentTrack)" :title="`Play ${currentTrack.title} on SoundCloud`" loading="lazy" allow="autoplay"></iframe>
         </div>
       </div>
-      <StudyGlobe v-else-if="object.id === 'globe'" interactive />
-      <StudyPennants v-else-if="object.id === 'flags'" flat />
-      <div v-else-if="object.cat != null" class="front-cat-view">
-        <img :src="catArt" :alt="object.label" />
-        <div class="cat-detail-actions" :aria-label="`Move ${object.label}`">
-          <button v-for="id in ['beanbag','desk','bowls','floor']" :key="id" type="button"
-            @click="emit('place-cat',object.cat,id === 'floor' ? null : id)">{{ ({ beanbag:'Beanbag',desk:'Desk',bowls:'Food bowls',floor:'Floor' })[id] }}</button>
+      <div v-else-if="object.id === 'globe'" class="globe-in-room">
+        <img class="in-room-art" :src="roomView('globe')" alt="A globe with an oak base and brass ring inside the study" />
+        <StudyPennants scene="globe" />
+        <StudyGlobe interactive embedded />
+      </div>
+      <div v-else-if="profile" class="front-cat-view" :class="`portrait-${object.id.toLowerCase()}`">
+        <button type="button" class="cat-portrait" :aria-label="`Play with ${object.label}`"
+          :style="{ '--tilt-x': tilt.x+'px', '--tilt-y': tilt.y+'px' }"
+          @pointermove="followPointer" @pointerleave="tilt = { x:0,y:0 }" @click="reaction++">
+          <span :key="reaction" :class="{ 'cat-reaction': reaction > 0 }"><img :src="catArt" :alt="object.label" draggable="false" /></span>
+        </button>
+        <div class="cat-profile">
+          <h3>{{ object.label }}</h3>
+          <p class="cat-chinese-name" lang="zh">{{ profile.chineseName }}</p>
+          <ul><li v-for="fact in profile.facts" :key="fact">{{ fact }}</li></ul>
         </div>
       </div>
-      <img v-else-if="frontImage(object.id)" class="standalone-object" :src="frontImage(object.id)" :alt="object.label" />
+      <div v-else-if="object.id === 'golf'" class="golf-in-room">
+        <img class="in-room-art" :src="roomView('golf')" alt="Olive golf bag beside the bamboo and glass doors inside the study" />
+      </div>
     </div>
   </section>
 </template>

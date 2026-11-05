@@ -1,12 +1,12 @@
 <script setup>
 import { onMounted, onUnmounted, ref, useId } from 'vue'
-import mapUrl from '../assets/study/world.svg'
+import mapUrl from '../assets/study/world-relief.webp'
 
-const props = defineProps({ interactive: Boolean })
+const props = defineProps({ interactive: Boolean, embedded: Boolean })
 const globe = ref(null)
 const size = props.interactive ? 368 : 132
 const metal = useId(), wood = useId(), shade = useId()
-let frame, drag, paint, angle = 110, timestamp = 0
+let frame, drag, paint, angle = 0, timestamp = 0
 const motion = window.matchMedia('(prefers-reduced-motion: reduce)')
 let alive = true
 onMounted(() => {
@@ -14,6 +14,7 @@ onMounted(() => {
   map.onload = () => {
     if (!alive) return
     const texture = document.createElement('canvas')
+    angle = (props.embedded ? -.08 : .15) * map.width
     texture.width = map.width
     texture.height = map.height
     const source = texture.getContext('2d', { willReadFrequently: true })
@@ -37,7 +38,7 @@ onMounted(() => {
           out: (row * size + col) * 4,
           u: (longitude / (2 * Math.PI) + .5) * map.width,
           v: Math.min(map.height - 1, Math.floor((.5 - latitude / Math.PI) * map.height)) * map.width,
-          light: .43 + light*.69 + z*.07,
+          light: .51 + light*.58 + z*.035,
           glow: Math.pow(light,13)*15,
           alpha: Math.min(255,(1-radius)*size*160),
         })
@@ -56,7 +57,7 @@ onMounted(() => {
     const tick = (now) => {
       if (now - timestamp >= 50) {
         if (!drag && !motion.matches) {
-          angle += Math.min(now - timestamp, 75) * .003
+          angle += Math.min(now - timestamp, 75) * .003 * map.width / 720
           paint()
         }
         timestamp = now
@@ -84,8 +85,8 @@ function spin(direction) { angle += direction * 23; paint?.() }
 </script>
 
 <template>
-  <div class="study-globe" :class="{ 'globe-interactive': interactive }">
-    <svg class="globe-mount" viewBox="0 0 200 248" aria-hidden="true">
+  <div class="study-globe" :class="{ 'globe-interactive': interactive, 'globe-embedded': embedded }">
+    <svg v-if="!embedded" class="globe-mount" viewBox="0 0 200 248" aria-hidden="true">
       <defs>
         <linearGradient :id="metal" x2="1" y2="1"><stop stop-color="#6d4d30"/><stop offset=".35" stop-color="#d5b275"/><stop offset=".57" stop-color="#f0d39a"/><stop offset=".8" stop-color="#a17849"/><stop offset="1" stop-color="#65432a"/></linearGradient>
         <linearGradient :id="wood" x2="1" y2=".2"><stop stop-color="#7e5134"/><stop offset=".34" stop-color="#bf9261"/><stop offset=".65" stop-color="#a17146"/><stop offset="1" stop-color="#694329"/></linearGradient>

@@ -2,6 +2,8 @@
 import { onMounted, onUnmounted, ref } from 'vue'
 import savedReadme from '../assets/study/portfolio-risk-readme.html?raw'
 
+defineProps({ scene: String })
+
 const owner = 'alisaayz'
 const fallback = { name: 'portfolio-risk', default_branch: 'main' }
 const project = ref(fallback)
@@ -70,15 +72,12 @@ onUnmounted(() => controller.abort())
 
 <template>
   <div class="monitor-set">
-    <div class="front-monitor">
-      <div class="monitor-browser">
-        <div class="monitor-address"><span aria-hidden="true">● ● ●</span><a :href="repoUrl(project)" target="_blank" rel="noopener noreferrer">{{ owner }}/{{ project.name }} ↗</a></div>
-        <div class="monitor-readme" tabindex="0" role="region" aria-label="GitHub README" :aria-busy="loading">
-          <article v-if="readme" v-html="readme"></article>
-        </div>
+    <img class="in-room-art" :src="scene" alt="Front view of the study computer, keyboard and mouse on the white desk" />
+    <div class="monitor-browser">
+      <div class="monitor-address"><span aria-hidden="true">● ● ●</span><a :href="repoUrl(project)" target="_blank" rel="noopener noreferrer">{{ owner }}/{{ project.name }} ↗</a></div>
+      <div class="monitor-readme" tabindex="0" role="region" aria-label="GitHub README" :aria-busy="loading">
+        <article v-if="readme" v-html="readme"></article>
       </div>
     </div>
-    <div class="monitor-stand" aria-hidden="true"></div>
-    <div class="front-desk" aria-hidden="true"><div class="front-keyboard"></div><div class="front-mouse"></div></div>
   </div>
 </template>

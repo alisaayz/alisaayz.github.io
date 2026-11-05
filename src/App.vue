@@ -1,23 +1,25 @@
 <script setup>
-import { defineAsyncComponent, nextTick, onMounted, onUnmounted, ref } from 'vue'
+import { computed, defineAsyncComponent, nextTick, onMounted, onUnmounted, ref } from 'vue'
 import Icon from './components/Icon.vue'
 import { galleryPhotos, wildCollage } from './gallery.js'
 import { profile } from './portfolio.js'
 import { resume } from './resume.js'
-import headshot from './assets/personal/headshot-button-down.png'
+import { featuredProjects } from './projects.js'
+import { preloadArt, roomArt } from './studyAssets.js'
+import headshot from './assets/personal/headshot-2026.webp'
 import signature from './assets/personal/signature-transparent.png'
 import onoPhoto from './assets/personal/ono.jpg'
 import yuzuPhoto from './assets/personal/yuzu.jpg'
-import uclaLogo from './assets/logos/ucla.svg'
-import wfuLogo from './assets/logos/wfu.webp'
+import uclaLogo from './assets/logos/ucla-seal.svg'
+import wfuLogo from './assets/logos/wfu-shield.webp'
 
 const pages = [
   { label: 'About Me', hash: 'about' },
-  { label: 'Experience', hash: 'experience' },
-  { label: 'Education', hash: 'education' },
-  { label: 'Projects', hash: 'projects' },
-  { label: 'Skills', hash: 'skills' },
-  { label: 'Beyond the Resume', hash: 'beyond' },
+  { label: 'Experience', hash: 'experience', title: 'Professional Journey' },
+  { label: 'Education', hash: 'education', title: 'Learning & Foundations' },
+  { label: 'Projects', hash: 'projects', title: 'Ideas Into Practice' },
+  { label: 'Skills', hash: 'skills', title: 'Tools & Expertise' },
+  { label: 'Beyond the Resume', hash: 'beyond', title: 'A Little More About Me' },
 ]
 const resumeUrl = `${import.meta.env.BASE_URL}Alisa_Zhu_Resume.pdf`
 const pageFromHash = () => {
@@ -26,7 +28,29 @@ const pageFromHash = () => {
   return pages.some(page => page.hash === hash) ? hash : 'about'
 }
 const activePage = ref(pageFromHash())
-const StudyRoom = defineAsyncComponent(() => import('./components/StudyRoom.vue'))
+const pageIndex = computed(() => pages.findIndex(page => page.hash === activePage.value))
+const pageInfo = computed(() => pages[pageIndex.value])
+const skillDialog = ref(null)
+const selectedSkill = ref('')
+const skillProjects = computed(() => featuredProjects.filter(project => project.tools.includes(selectedSkill.value)))
+const usedSkills = new Set(featuredProjects.flatMap(project => project.tools))
+function showSkill(skill) {
+  selectedSkill.value = skill
+  skillDialog.value.showModal()
+}
+async function showProject(project) {
+  skillDialog.value.close()
+  await navigate('projects')
+  const item = document.getElementById(project.id)
+  item?.scrollIntoView({ block:'center' })
+  item?.focus({ preventScroll:true })
+}
+const loadStudy = () => import('./components/StudyRoom.vue')
+const StudyRoom = defineAsyncComponent(loadStudy)
+function warmStudy() {
+  preloadArt(roomArt, 'auto')
+  loadStudy().catch(() => {})
+}
 const roomOpen = ref(false)
 const corner = ref(null)
 async function closeRoom() {
@@ -41,7 +65,7 @@ function syncTheme() {
   isDark.value = themePreference.value === 'system' ? systemTheme.matches : themePreference.value === 'dark'
   const theme = isDark.value ? 'dark' : 'light'
   document.documentElement.dataset.theme = theme
-  document.querySelector('meta[name="theme-color"]')?.setAttribute('content', isDark.value ? '#22231f' : '#fbf9f3')
+  document.querySelector('meta[name="theme-color"]')?.setAttribute('content', isDark.value ? '#202a34' : '#ffffff')
 }
 function chooseTheme(preference) {
   themePreference.value = preference
@@ -64,6 +88,10 @@ function syncPage() {
 }
 onMounted(() => {
   syncTheme()
+  if (!navigator.connection?.saveData) {
+    if (window.requestIdleCallback) window.requestIdleCallback(warmStudy, { timeout:1500 })
+    else window.setTimeout(warmStudy,900)
+  }
   systemTheme.addEventListener('change', syncTheme)
   window.addEventListener('popstate', syncPage)
   window.addEventListener('hashchange', syncPage)
@@ -80,7 +108,7 @@ onUnmounted(() => {
   <div class="site-layout">
     <aside class="sidebar" aria-label="Profile and navigation">
       <div class="sidebar-brand">
-        <a class="signature-logo" href="#about" aria-label="Alisa Zhu home" @click.prevent="navigate('about')"><img :src="signature" alt="Alisa Zhu signature logo" /></a>
+        <span class="signature-logo" aria-hidden="true"><img :src="signature" alt="" /></span>
         <h1>{{ profile.name }}</h1>
       </div>
       <nav class="navigation" aria-label="Main navigation">
@@ -90,7 +118,8 @@ onUnmounted(() => {
       </nav>
       <div class="sidebar-links">
         <a :href="`mailto:${profile.email}`"><Icon name="mail" /><span><small>Email</small>{{ profile.email }}</span></a>
-        <a :href="profile.linkedin" target="_blank" rel="noopener noreferrer"><Icon name="linkedin" /><span><small>LinkedIn</small>alisa-zhu <Icon name="arrow" /></span></a>
+        <a :href="profile.github" target="_blank" rel="noopener noreferrer" aria-label="GitHub: alisaayz"><Icon name="github" /><span>GitHub <Icon name="arrow" /></span></a>
+        <a :href="profile.linkedin" target="_blank" rel="noopener noreferrer"><Icon name="linkedin" /><span>LinkedIn <Icon name="arrow" /></span></a>
         <div class="appearance-control sidebar-appearance">
           <p class="theme-status"><Icon :name="isDark ? 'moon' : 'sun'" /><span>Appearance</span></p>
           <div class="appearance-options" role="group" aria-label="Appearance">
@@ -103,24 +132,34 @@ onUnmounted(() => {
       <section v-if="activePage === 'about'" class="about-page" aria-label="About Me">
         <div class="hero-copy">
           <p class="eyebrow">01 <span>/</span> About Me</p>
-          <h2>Alisa Zhu<span class="title-period">.</span></h2>
-          <p class="about-tagline">Turning data into better business decisions.</p>
-          <p class="about-meta">Data analytics · Finance · Technology</p>
+          <h2>Hi, I'm Alisa</h2>
+
         </div>
         <div class="hero-visual">
           <div class="headshot-photo"><img :src="headshot" alt="Alisa Zhu headshot" /></div>
         </div>
-        <div class="about-story"><p v-for="paragraph in profile.aboutParagraphs" :key="paragraph">{{ paragraph }}</p></div>
+        <div class="hero-description">
+          <p class="about-tagline">Turning data into better business decisions.</p>
+          <p class="about-meta"><span>Data Analytics · Finance</span><span class="meta-divider" aria-hidden="true"> · </span><span>Technology · Healthcare</span></p>
+        </div>
+        <div class="about-story">
+          <section v-for="part in profile.aboutSections" :key="part.heading">
+            <h3>{{ part.heading }}</h3>
+            <p>{{ part.body }}</p>
+          </section>
+        </div>
       </section>
       <div v-else class="page-content" :key="activePage">
-        <header class="page-header"><p class="eyebrow">{{ activePage === 'experience' ? 'Professional journey' : activePage === 'education' ? 'Learning & foundations' : activePage === 'skills' ? 'Tools & expertise' : activePage === 'beyond' ? 'A little more about me' : 'Ideas into practice' }}</p><h2>{{ pages.find(page => page.hash === activePage)?.label }}</h2></header>
+        <header class="page-header">
+          <p class="eyebrow">0{{ pageIndex + 1 }} / {{ pageInfo.label }}</p>
+          <h2>{{ pageInfo.title }}</h2>
+        </header>
         <template v-if="activePage === 'experience'">
           <div class="resume-actions">
             <a class="primary-button" :href="resumeUrl" target="_blank" rel="noopener noreferrer">View Resume <Icon name="arrow" /></a>
             <a class="secondary-button" :href="resumeUrl" download="Alisa_Zhu_Resume.pdf">Download PDF <Icon name="book" /></a>
           </div>
           <section class="section-block">
-            <div class="timeline-heading"><span class="icon-box"><Icon name="book" /></span><h3>Professional Experience</h3></div>
             <ol class="timeline resume-timeline">
               <li v-for="experience in resume.experience" :key="experience.company">
                 <h4>{{ experience.company }}</h4>
@@ -139,12 +178,11 @@ onUnmounted(() => {
         </template>
         <template v-else-if="activePage === 'education'">
           <section class="section-block">
-            <div class="timeline-heading"><span class="icon-box"><Icon name="school" /></span><h3>Education</h3></div>
             <ol class="timeline resume-timeline">
               <li v-for="education in resume.education" :key="education.school">
                 <div class="education-heading">
                   <span class="school-logo" :class="education.school.startsWith('UCLA') ? 'school-logo-ucla' : 'school-logo-wfu'">
-                    <img :src="education.school.startsWith('UCLA') ? uclaLogo : wfuLogo" :alt="education.school.startsWith('UCLA') ? 'UCLA logo' : 'Wake Forest University logo'" />
+                    <img :src="education.school.startsWith('UCLA') ? uclaLogo : wfuLogo" :alt="education.school.startsWith('UCLA') ? 'UCLA campus seal' : 'Wake Forest University shield'" />
                   </span>
                   <h4>{{ education.school }}</h4>
                 </div>
@@ -173,17 +211,22 @@ onUnmounted(() => {
         </template>
         <template v-else-if="activePage === 'skills'">
           <section class="section-block">
-            <div class="timeline-heading"><span class="icon-box"><Icon name="code" /></span><h3>Technical Skills</h3></div>
+            <p class="skill-hint">Select a skill with an arrow to see where I used it.</p>
             <div v-for="skill in resume.skills" :key="skill.category" class="resume-skill-group">
               <h4>{{ skill.category }}</h4>
-              <div class="interest-tags"><span v-for="item in skill.items" :key="item">{{ item }}</span></div>
+              <div class="interest-tags">
+                <template v-for="item in skill.items" :key="item">
+                  <button v-if="usedSkills.has(item)" type="button" aria-haspopup="dialog" @click="showSkill(item)">{{ item }} <Icon name="arrow" /></button>
+                  <span v-else>{{ item }}</span>
+                </template>
+              </div>
             </div>
           </section>
         </template>
         <section v-else-if="activePage === 'beyond'" class="beyond-page">
           <div class="personal-grid">
             <section class="personal-card"><h3>Languages</h3><dl class="language-list"><div><dt>English</dt><dd>Native</dd></div><div><dt>Chinese</dt><dd>Native</dd></div><div><dt>Spanish</dt><dd>Beginner</dd></div></dl></section>
-            <section class="personal-card"><h3>Hobbies</h3><ul class="hobby-grid"><li v-for="hobby in [{ name: 'Golf', symbol: '⛳' }, { name: 'Skiing', symbol: '⛷' }, { name: 'Incense crafting', symbol: '✧' }, { name: 'Surfing', symbol: '≈' }]" :key="hobby.name"><span class="hobby-symbol" aria-hidden="true">{{ hobby.symbol }}</span><span>{{ hobby.name }}</span></li></ul></section>
+            <section class="personal-card"><h3>Hobbies</h3><ul class="hobby-grid"><li v-for="hobby in [{ name: 'Golf', symbol: '⛳️' }, { name: 'Skiing', symbol: '⛷️' }, { name: 'Incense crafting', symbol: '🕯️' }, { name: 'Surfing', symbol: '🏄' }]" :key="hobby.name"><span class="hobby-symbol" aria-hidden="true">{{ hobby.symbol }}</span><span>{{ hobby.name }}</span></li></ul></section>
           </div>
           <section class="wild-section"><h3>In the Wild</h3><div class="captioned-gallery">
             <figure v-for="photo in galleryPhotos" :key="photo.caption" class="gallery-card">
@@ -196,10 +239,14 @@ onUnmounted(() => {
             <figure class="cat-card"><img :src="yuzuPhoto" alt="Yuzu, my yellow-colored cat, wearing pink headphones" loading="lazy" /><figcaption>Yuzu</figcaption></figure>
           </div></section>
         </section>
-        <section v-else-if="activePage === 'projects'" class="coming-soon">
-          <span class="coming-symbol" aria-hidden="true">✧</span>
-          <h3>Coming soon</h3>
-          <p>New projects will be shared here.</p>
+        <section v-else-if="activePage === 'projects'" class="project-list" aria-label="Selected projects">
+          <article v-for="project in featuredProjects" :id="project.id" :key="project.id" tabindex="-1">
+            <h3>{{ project.title }}</h3>
+            <p v-if="project.status" class="project-status">{{ project.status }}</p>
+            <p>{{ project.summary }}</p>
+            <ul class="project-tools" aria-label="Skills used"><li v-for="tool in project.tools" :key="tool">{{ tool }}</li></ul>
+            <a v-if="project.url" :href="project.url" target="_blank" rel="noopener noreferrer">{{ project.link }} <Icon name="arrow" /></a>
+          </article>
         </section>
       </div>
       <footer class="mobile-appearance-footer">
@@ -212,8 +259,16 @@ onUnmounted(() => {
       </footer>
     </main>
   </div>
-  <button ref="corner" class="page-fold" type="button" aria-label="Open the study room" aria-haspopup="dialog" :aria-expanded="roomOpen" @click="roomOpen = true">
-    <span class="fold-face" aria-hidden="true">↗</span><span class="fold-label">The study room</span>
+  <button ref="corner" class="page-fold" type="button" aria-label="Open the study room" aria-haspopup="dialog" :aria-expanded="roomOpen" @pointerenter="warmStudy" @focus="warmStudy" @click="roomOpen = true">
+    <span class="fold-face" aria-hidden="true"></span><span class="fold-label" aria-hidden="true">Study Room</span>
   </button>
+  <dialog ref="skillDialog" class="skill-dialog" aria-labelledby="skill-dialog-title">
+    <div class="skill-dialog-header">
+      <h2 id="skill-dialog-title">{{ selectedSkill }}</h2>
+      <form method="dialog"><button type="submit" aria-label="Close skill projects">×</button></form>
+    </div>
+    <p>Used in these projects:</p>
+    <ul><li v-for="project in skillProjects" :key="project.id"><button type="button" @click="showProject(project)">{{ project.title }} <Icon name="arrow" /></button></li></ul>
+  </dialog>
   <StudyRoom v-if="roomOpen" @close="closeRoom" />
 </template>

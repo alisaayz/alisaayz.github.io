@@ -8,7 +8,8 @@ export const resume = {
   workAuthorization: 'TN Visa Eligible (Alternative to H-1B Sponsorship) · 3-Year OPT',
   summary: 'UCLA Anderson MSBA candidate with two years of experience leveraging financial modeling, market analytics, and competitive intelligence across biotechnology, investment banking, and corporate strategy in North America and Asia. Translates complex financial and market data into investment, commercialization, and market-entry decisions.',
   skills: [
-    { category: 'Programming & Data', items: ['Python', 'SQL', 'R', 'Excel'] },
+    { category: 'Programming & Data', items: ['Python', 'SQL', 'R', 'Excel', 'Data Cleaning & Joins', 'AI-Assisted Coding'] },
+    { category: 'Applied Analytics', items: ['Dashboard Development', 'Data Visualization', 'Risk Analysis', 'Volatility Forecasting'] },
     { category: 'Financial Tools', items: ['Bloomberg Terminal', 'Capital IQ', 'Morningstar'] },
     { category: 'Equity Research & Financial Analysis', items: ['Financial Modeling', 'DCF Valuation', 'Comparable Company Analysis', 'Three-Statement Modeling', 'Company & Industry Research', 'Financial Statement Analysis', 'Investment Due Diligence', 'Scenario & Sensitivity Analysis'] },
     { category: 'Data & Business Analysis', items: ['Market Research', 'Competitive Intelligence', 'Market Sizing', 'Revenue & Cost Forecasting', 'ROI & Break-Even Analysis', 'Business Case Development', 'Data Storytelling'] },
@@ -35,7 +36,7 @@ export const resume = {
         { title: 'Finance & Accounting', courses: ['Intermediate Accounting II', 'Equity Investments', 'Financial Derivatives', 'Fixed Income and Financial Engineering'] },
       ],
       details: [
-        { title: 'Organizations & Leadership', items: ['Women in Business — Member', 'Finance Club — Member', 'Student Marshal', 'Undergraduate Business Student Council — Member', 'Student Budget Advisory Committee — Data & Analytics Subcommittee'] },
+        { title: 'Organizations & Leadership', items: ['Women in Business', 'Finance Club', 'Student Marshal', 'Undergraduate Business Student Council', 'Student Budget Advisory Committee — Data & Analytics Subcommittee'] },
         { title: 'Awards', items: ['Conrad Challenge — Finalist, Power Pitch Winner, and Conrad Challenge Innovator', 'Blue Ocean Competition — Top 100 Finalist', 'Ivey Business Case Competition — Vancouver Region Second Place', 'Discover Your Pitch — Preliminary Round First Place'] },
       ],
     },
@@ -49,41 +50,39 @@ export const resume = {
         { title: 'Research Analyst Intern', dates: 'May 2023 – July 2023' },
       ],
       groups: [
-        {
-          title: 'Market Analytics',
-          bullets: [
-            'Spearheaded market research across 10 North American prostate cancer diagnostic companies, uncovering demand for lower-cost, non-invasive screening and shaping a hospital-first U.S. market-entry strategy.',
-            'Developed a model to evaluate 15+ healthcare data monetization approaches based on projected revenues and implementation costs, resulting in a commercialization strategy projected to increase annual profits by 5–10%; leadership subsequently formed a dedicated AI team to pursue the recommendation.',
-          ],
-        },
-        {
-          title: 'Business Analytics & Partnerships',
-          bullets: [
-            'Secured board approval for a pilot U.S. product launch for an external partner by engineering a five-year forecast using 8 years of historical data across three scenarios to establish break-even, ROI, and revenue targets.',
-            'Established and cultivated two strategic relationships with North American medical experts on behalf of the CEO, securing ongoing clinical, FDA, and product-development guidance.',
-          ],
-        },
+        { title: "Business Analytics & Partnerships", bullets: [
+          "Secured board approval for a pilot U.S. launch by building a five-year forecast from 8 years of historical data across three scenarios, using break-even, ROI, and revenue targets to substantiate the business case for expansion.",
+          "Independently led consultations with a UCLA urologist and a diagnostics researcher, translating clinical, regulatory, and product feedback into recommendations that helped shift expansion priorities toward hospital and physician partnerships for clinical trials.",
+        ] },
+        { title: "Market Analytics", bullets: [
+          "Evaluated 15+ healthcare data monetization approaches through a financial model comparing projected revenue, implementation costs, and strategic feasibility, identifying a commercialization strategy projected to increase annual profits by 5–10%.",
+          "Spearheaded market research across 10 North American prostate cancer diagnostic companies, comparing product offerings and unmet needs to identify commercial opportunities and recommend a hospital-first U.S. entry strategy.",
+        ] },
       ],
     },
     {
       company: 'CICC Alpha',
       location: 'Beijing, CN',
       roles: [{ title: 'Investment Analyst Intern', dates: 'June 2024 – Aug 2024' }],
-      groups: [{ bullets: [
-        'Developed an assumption-driven DCF model with adjustable inputs, enabling senior management to generate on-demand valuation outputs for board review.',
-        'Built the analytical case for exiting a private Chinese patent medicine investment by benchmarking 8 public peers and evaluating exposure to centralized procurement and Essential Medicines List policies, identifying underperformance versus peers and validating management’s exit thesis.',
-        'Conducted financial and contractual due diligence on a targeted $2M share repurchase, identifying performance risks that informed management negotiations and supported execution of the final $1.2M transaction.',
-        'Consolidated performance, AUM, growth, CapEx, and portfolio metrics across 10 private equity and venture funds into quarterly board presentations supporting portfolio review and investment decisions.',
-      ] }],
+      groups: [
+        { bullets: [
+          "Developed an adjustable DCF model that enabled senior management to compare investment scenarios and valuation sensitivities on demand, providing a reusable analytical tool for board-level investment decisions.",
+          "Distilled financial and operating metrics across 10 private equity and venture funds into quarterly board presentations, highlighting AUM, growth, CapEx, and portfolio performance to support management review and investment decisions.",
+          "Substantiated management’s investment-exit thesis by benchmarking 8 public peers on operating performance, valuation, and policy exposure, translating company and sector research into an evidence-based investment recommendation.",
+          "Conducted financial and contractual due diligence on a targeted $2M share repurchase, identifying performance risks that strengthened management’s negotiating position and supported execution of the final $1.2M transaction.",
+        ] },
+      ],
     },
     {
       company: 'Industrial Securities',
       location: 'Shanghai, CN',
       roles: [{ title: 'Investment Analyst Intern', dates: 'June 2023 – Aug 2023' }],
-      groups: [{ bullets: [
-        'Screened 40+ public companies across alternative sector classifications and refined the IPO peer set to 16 comparables, benchmarking revenue, growth, profitability, margins, costs, and R&D to identify a mismatch with the client’s preferred high-growth chemical segment and develop an alternative positioning rationale.',
-        'Authored 20+ pages of an IPO prospectus’s market and regulatory analysis, synthesizing sector research, listing requirements across two exchanges, and comparable-company findings to support the client’s proposed sector positioning.',
-      ] }],
+      groups: [
+        { bullets: [
+          "Screened 40+ public companies and narrowed the peer set to 16 comparables, using financial and competitive benchmarking to challenge the client’s preferred sector positioning and recommend a better-supported alternative for the IPO listing.",
+          "Authored 20+ pages of market and regulatory analysis, comparing listing requirements across two exchanges and translating sector research into a clear assessment of market conditions and regulatory considerations.",
+        ] },
+      ],
     },
     {
       company: 'Dublo Solutions (Sustainable Packaging)',

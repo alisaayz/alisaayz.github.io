@@ -84,10 +84,12 @@
   display: flex; gap: 12px; align-items: end; justify-content: space-between;
   pointer-events: none;
 }
-.room-controls p { font: .72rem/1.55 var(--sans); color: var(--room-muted); background: #f5eee2e8; padding: 3px 6px; border-radius: 4px }
+.room-controls p { min-width: 0; font: .72rem/1.55 var(--sans); color: var(--room-muted); background: #f5eee2e8; padding: 3px 6px; border-radius: 4px }
 .mobile-room-help { display: none }
-.zoom-controls { display: flex; pointer-events: auto; border: 1px solid var(--room-line); background: var(--room-paper); border-radius: 5px; overflow: hidden; font: 500 .74rem/1 var(--mono) }
+.zoom-controls { display: flex; flex: 0 0 auto; pointer-events: auto; border: 1px solid var(--room-line); background: var(--room-paper); border-radius: 5px; overflow: hidden; font: 500 .74rem/1 var(--mono) }
 .zoom-controls button { border: 0; background: transparent; min-height: 39px; min-width: 37px; padding: 6px 8px }
+.zoom-controls button { flex: 0 0 auto; white-space: nowrap }
+.zoom-controls button:nth-child(2) { min-width: calc(5ch + 14px); font-variant-numeric: tabular-nums }
 .zoom-controls button+button { border-left: 1px solid var(--room-line) }
 .zoom-controls button:hover:not(:disabled) { background: #e9dfce }
 .zoom-controls button:focus-visible { outline-offset: -3px }
@@ -104,18 +106,18 @@
 }
 @media(max-height: 510px) { .room-stage { top: 46% } .room-title span { display: none } }
 
-/* The same pennants share the wall's slant in the overview. */
-.study-pennants:not(.pennants-flat) { position: absolute; left: 84.45%; top: 30.55%; width: 4%; height: 11%; pointer-events: none }
-.study-pennants:not(.pennants-flat) .study-pennant { position: absolute; left: 0; width: 100%; transform: skewY(22.8deg); transform-origin: left center }
-.study-pennants:not(.pennants-flat) .pennant-ucla { top: 8%; width: 78% }
-.study-pennants:not(.pennants-flat) .pennant-wfu { top: 63%; width: 66%; margin-left: 2% }
-.study-pennant img,.study-pennant svg { width: 100%; height: auto; display: block }
-.pennants-flat { display: grid; gap: 18px; width: min(600px,90%); padding: 20px 0 }
-.pennants-flat .study-pennant { display: grid; align-items: center; justify-items: start; width: 100%; aspect-ratio: 3.1; clip-path: polygon(0 0,100% 50%,0 100%); background: #c5a267; position: relative; isolation: isolate; padding-left: 8% }
-.pennants-flat .study-pennant::before { content:''; position:absolute; inset: 5%; clip-path: polygon(0 0,100% 50%,0 100%); z-index:-1; background: #2b4f74 }
-.pennants-flat .pennant-wfu::before { background: #292723 }
-.pennants-flat img { width: 32% }
-.pennants-flat svg { width: 25% }
+/* Match the wall perspective in the overview; keep crests level in close-ups. */
+.study-pennants { position:absolute; inset:0; pointer-events:none }
+.study-pennant { position:absolute; display:block; aspect-ratio:1; object-fit:contain; height:auto }
+.pennant-ucla { background:#f8eed8; border-radius:50%; padding:.09em; }
+.pennant-wfu { filter: brightness(0) saturate(100%) invert(79%) sepia(34%) saturate(560%) hue-rotate(350deg) brightness(100%) }
+.pennants-overview .study-pennant { transform:skewY(22deg); transform-origin:center }
+.pennants-overview .pennant-ucla { left:85.6%; top:30.7%; width:2.6%; padding:.12cqw }
+.pennants-overview .pennant-wfu { left:85.45%; top:38.3%; width:2.55% }
+.pennants-globe .pennant-ucla { left:82.75%; top:4.2%; width:4.25% }
+.pennants-globe .pennant-wfu { left:82.6%; top:12.65%; width:4.45% }
+.pennants-record .pennant-ucla { left:50%; top:5.85%; width:2.1% }
+.pennants-record .pennant-wfu { left:49.95%; top:14.9%; width:2.18% }
 .item-view { position: absolute; inset: 0; z-index: 5; background: #f5eee2; opacity: 1; animation: item-reveal .37s .22s both; }
 @keyframes item-reveal { from { opacity: 0 } to { opacity: 1 } }
 .item-return { position: absolute; z-index: 4; left: clamp(14px,4vw,52px); top: clamp(78px,16vh,110px); border: 1px solid #d1c3af; border-radius: 20px; padding: 6px 13px; background: #fbf6eb; font: 550 .74rem/1.45 var(--sans) }
@@ -123,17 +125,13 @@
 .item-scene { position: absolute; inset: clamp(125px,20vh,156px) 0 0; display: grid; place-items: center; overflow: auto; padding: 12px clamp(16px,6vw,90px) 26px; overscroll-behavior: contain }
 .room-dialog:has(.item-view) .room-header { z-index: 8 }
 .room-dialog:has(.item-view) .room-status { z-index: 4 }
-.standalone-object { max-width: min(85vw,690px); max-height: min(66dvh,620px); object-fit: contain; filter: drop-shadow(0 18px 17px #49321736) }
-.item-bowls .standalone-object { max-width: min(73vw,550px) }
 .front-cat-view { display: grid; justify-items:center; align-content: center; gap: 10px }
 .front-cat-view img { width: min(52vw,290px); height: min(43dvh,300px); object-fit: contain; filter: drop-shadow(0 14px 16px #523f2f48) }
-.cat-detail-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px }
-.cat-detail-actions button { padding: 5px 9px; border: 1px solid var(--room-line); background: var(--room-paper); border-radius: 4px; font: .76rem/1.5 var(--sans) }
 
 /* Front-on close-ups use the same cork and oak from the room artwork. */
 .front-cork,.front-shelves { position: relative; isolation: isolate; box-shadow: 0 12px 24px #4a322035; }
 .front-cork { width: min(78vw,790px,101svh); aspect-ratio: 330/218; overflow: hidden; background:#b78761 }
-.front-cork > svg,.front-shelves > svg { position: absolute; width: 100%; height: 100%; inset: 0; }
+.front-cork > .in-room-art { position: absolute; inset: 0; }
 .front-prints { position: absolute; inset: 11% 9%; display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); align-items:center; gap: 8% 6%; }
 .front-print { position: relative; background:#fff3de; border:0; padding: 6% 5% 10%; box-shadow: 0 3px 6px #42271978; transform: rotate(var(--print-angle)); transition: transform .2s; min-width:0 }
 .front-print::before { content:''; position:absolute; z-index:1; width: 6%; aspect-ratio: 1; left: 47%; top: 1%; border-radius:50%; background: #ad6447; box-shadow: 1px 2px 2px #381912a0 }
@@ -153,7 +151,6 @@
 
 /* The README stays inside the computer screen and has its own scroll. */
 .monitor-set { display:grid; justify-items:center; width:min(100%,1020px); }
-.front-monitor { z-index:2; width: min(100%,900px,135svh); border: clamp(6px,1vw,13px) solid #312f2c; padding:2px; background:#191c1a; border-radius: 7px; box-shadow: 0 1px 0 1px #151510,0 12px 30px #513a2e43; }
 .monitor-browser { display:grid; grid-template-rows:auto minmax(0,1fr); height:clamp(205px,50svh,510px); min-width:0; background:#fdfaf3; border-radius:3px; overflow:hidden }
 .monitor-address { display:flex; align-items:center; gap: clamp(7px,2vw,19px); background:#414a3e; color:#fff3dc; font: 500 .72rem/1.4 var(--mono); padding:7px 11px }
 .monitor-address span { color:#e0b991; white-space:nowrap }
@@ -168,13 +165,8 @@
 .monitor-readme pre { overflow:auto; padding:10px; background:#eeeadf; font-size:.74rem }
 .monitor-readme table { border-collapse:collapse }
 .monitor-readme td,.monitor-readme th { border:1px solid #ddd4c3; padding:4px 6px; }
-.monitor-stand { width:9%; height:clamp(19px,5svh,45px); z-index:1; background:linear-gradient(90deg,#33312d,#4f4940 43%,#302c27); border-bottom:3px solid #251d18; border-radius: 0 0 8% 8%; box-shadow:0 3px 4px #4c3a2860; }
-.front-desk { width:100%; height:clamp(35px,8svh,78px); margin-top:-4px; display:flex; align-items:center; justify-content:center; gap:6%; background:linear-gradient(#fff9ee,#f8f0e0); border-bottom:8px solid #e3d5c2; border-radius:4px 4px 2px 2px; box-shadow:0 13px 21px #634d3625; }
-.front-keyboard { width:33%; height:58%; border:2px solid #d9cfbd; border-radius:4px; background: repeating-linear-gradient(90deg,transparent 0 6%,#e2d8c9 6.3% 7%),repeating-linear-gradient(0deg,#faf6ec 0 20%,#e0d5c4 21% 25%); transform:perspective(340px) rotateX(33deg); box-shadow:0 2px 1px #aa9e89 }
-.front-mouse { width:4%; height:49%; border-radius:52% 52% 45% 45%; background:linear-gradient(120deg,#fffdf8,#dcd2c0); transform:perspective(130px) rotateX(22deg); box-shadow:0 2px 2px #a89c88; }
 
 .listening-station { width:min(100%,1050px); display:grid; grid-template-columns:minmax(0,1.2fr) minmax(0,1fr); align-items:center; gap:clamp(18px,5vw,85px); }
-.record-front { display:block; max-width:100%; width:100%; height:min(59svh,570px); object-fit:contain; object-position:center; filter: drop-shadow(0 15px 14px #53321d3b); }
 .record-selection { border-top:1px solid #beaa8f; border-bottom:1px solid #beaa8f; padding:18px 0 }
 .record-selection h3 { font-size:clamp(1.35rem,3.5vw,2rem) }
 .record-selection p { font: .83rem/1.5 var(--sans); margin-top:9px; color:var(--room-muted) }
@@ -215,3 +207,71 @@
 .room-intro p { margin-top:14px; font:.78rem/1.7 var(--mono) }
 
 .room-stage:not(.art-ready) > :not(.room-art) { visibility: hidden }
+
+/* Follow the original camera move, then settle into the room's level view. */
+.room-stage { transition-duration: .46s }
+.item-view { animation: none }
+.room-angle-enter-active { transition: opacity .4s ease }
+.room-angle-leave-active { transition: opacity .32s ease }
+.room-angle-enter-active .item-scene { transition: transform .49s cubic-bezier(.18,.65,.25,1) }
+.room-angle-enter-from,.room-angle-leave-to { opacity: 0 }
+.room-angle-enter-from .item-scene { transform: perspective(900px) translateY(12px) rotateY(-5deg) scale(1.06) }
+.room-angle-enter-from.item-books .item-scene,.room-angle-enter-from.item-golf .item-scene { transform: perspective(900px) translateY(12px) rotateY(5deg) scale(1.06) }
+
+.room-status { clip-path: inset(50%); height: 1px; width: 1px; overflow: hidden; padding: 0 }
+
+.in-room-art { display: block; width: 100%; height: 100%; }
+.monitor-set,.golf-in-room,.globe-in-room,.listening-station {
+  position: relative; overflow: hidden; background: #dec7aa; box-shadow: 0 12px 32px #49342124;
+}
+.monitor-set,.listening-station { width: min(100%,1050px,calc((100svh - 166px)*1.5)); aspect-ratio: 3/2; display: block }
+.monitor-set > .in-room-art,.globe-in-room > .in-room-art { position:absolute; inset:0; }
+.monitor-browser { position:absolute; inset:18.4% 4.4% 34.75%; height:auto; border-radius:1px; background: #faf7ee }
+.monitor-address { padding: 6px 10px; }
+.monitor-readme { padding: clamp(8px,1.65vw,22px); }
+.monitor-readme h1 { font-size: clamp(1rem,2.2vw,1.55rem) }
+.golf-in-room { width:min(100%,830px,calc((100svh - 170px)*1.269)); aspect-ratio:1122/884; }
+.globe-in-room,.front-shelves { width: min(88vw,525px,calc((100svh - 165px)*.8)); aspect-ratio: 1122/1402; }
+.globe-in-room > .study-globe.globe-embedded { position:absolute; left:17.13%; top:9.12%; width:65.15%; height:52.18%; display:block; aspect-ratio:auto; margin:0 }
+.globe-embedded canvas { width:100%; height:100%; margin:0; }
+.shelf-book { height: 23.5%; width: 10.05%; }
+.front-cork { width: min(81vw,840px,calc((100svh - 166px)*1.5)); aspect-ratio:3/2; }
+.front-prints { inset: 14% 10%; }
+.listening-station > .in-room-art { position:absolute; inset:0 }
+.record-selection { position:absolute; top:40%; right:5%; width:34%; border:0; background:#f9f0e2d9; box-shadow: 0 3px 18px #49302116; border-radius: 5px; padding:clamp(12px,2vw,25px); max-height: 57%; overflow:auto }
+.record-selection h3 { font-size: clamp(1.1rem,2.65vw,1.8rem) }
+.front-cat-view { width:min(100%,790px); display:grid; grid-template-columns:minmax(130px,1fr) minmax(0,1.1fr); align-items:center; justify-items:stretch; gap:clamp(16px,5vw,68px); }
+.cat-portrait { display:grid; place-items:center; background:none; border:0; padding:0; cursor:pointer; }
+.cat-portrait > span { display:grid; place-items:center; }
+.cat-portrait img { display:block; width:100%; height:min(50svh,360px); object-fit:contain; transform:translate(var(--tilt-x),var(--tilt-y)); transition:transform .18s ease-out; filter: drop-shadow(0 12px 12px #4b321a35) }
+.cat-profile h3 { font-size:clamp(2.1rem,5vw,3.5rem); line-height:1.02; }
+.cat-chinese-name { color:#63503b; font-size:clamp(1.15rem,2.3vw,1.6rem); line-height:1.5; margin-top:5px; }
+.cat-profile ul { font-size:clamp(.9rem,1.5vw,1rem); padding-left:1.1em; }
+.cat-profile li + li { margin-top:.5rem; }
+.cat-reaction { animation:cat-pounce .52s cubic-bezier(.3,.75,.45,1) both }
+.portrait-yuzu .cat-reaction { animation-name:cat-chirp }
+@keyframes cat-pounce { 25% { transform:translateY(7px) scale(1.04,.94) } 58% { transform:translateY(-25px) scale(.99,1.04) rotate(-3deg) } }
+@keyframes cat-chirp { 30% { transform:translateY(-11px) rotate(4deg) } 62% { transform:translateY(-4px) rotate(-4deg) } }
+.room-cat.cat-keyboard { width:10.9% }
+.room-cat.cat-keyboard img { transform-origin: 73% 78%; animation:cat-key-tap 2.5s ease-in-out infinite }
+.room-cat.cat-mouse { width:10.8% }
+.room-cat.cat-mouse img { animation:cat-mouse-paw 1.7s ease-in-out infinite }
+@keyframes cat-key-tap { 48% { translate:-.3cqw .12cqw; rotate:2deg } 56% { translate:-.5cqw -.22cqw } }
+@keyframes cat-mouse-paw { 32% { translate:-.85cqw .08cqw; rotate:-5deg } 44% { translate:-.5cqw -.15cqw; rotate:2deg } }
+@media(max-width:600px) {
+  .monitor-set { aspect-ratio:1.09 }
+  .monitor-address { font-size:.6rem; padding:4px 5px }
+  .monitor-readme { font-size:.72rem }
+  .front-cork { width: min(94vw,690px); }
+  .front-cat-view { grid-template-columns: minmax(110px,.8fr) minmax(0,1.2fr); gap:12px }
+  .cat-portrait img { height:min(40svh,285px) }
+  .cat-profile ul { font-size:.83rem; line-height:1.48 }
+  .listening-station { display:grid; aspect-ratio:auto; overflow:visible; width:100%; }
+  .listening-station > .in-room-art { position:static; height:auto }
+  .record-selection { position:static; width:100%; max-height:none; }
+}
+@media(prefers-reduced-motion:reduce) {
+  .room-angle-enter-active,.room-angle-leave-active,.room-angle-enter-active .item-scene { transition-delay:0s }
+}
+
+@media(max-width:600px) { .pennants-record { aspect-ratio:3/2; bottom:auto } }

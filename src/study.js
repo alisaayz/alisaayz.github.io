@@ -11,14 +11,25 @@ export const propsInRoom = [
   { id: 'bowls', label: 'Food bowls', x: 84.9, y: 72.8, w: 16.5, h: 9.5, shape: '0 43%,94% 0,100% 57%,4% 100%' },
   { id: 'globe', label: 'Globe', x: 70.2, y: 77.5, w: 9, h: 13.4 },
 ]
+export const roomCloseups = propsInRoom.filter(item => ['books','photos','monitor','golf','record','globe'].includes(item.id))
+export const catProfiles = [
+  {
+    chineseName: '椰子',
+    facts: ['If it comes from your hand, it’s a snack. Ono will try just about anything.', 'Ono means “delicious” in Hawaiian. A very fitting name for the resident taste tester.', 'Ono’s favorite surprise? Pouncing on unsuspecting humans.'],
+  },
+  {
+    chineseName: '柚子',
+    facts: ['Yuzu is a very selective food critic. Most snacks don’t make the cut.', 'Every sprint comes with its own soundtrack: Yuzu meows the whole way.', 'Already a tiny globetrotter: Yuzu has traveled to three countries.'],
+  },
+]
 export const catRoutes = [
   [[42,66],[45,64],[39,60],[35,62],[43,65],[51,70],[46,73]],
   [[62,87],[66,85],[75,80],[79,76],[76,73],[71,71],[64,72],[67,82]],
 ]
 export const catActivities = {
   beanbag: { pose: 'sleep', positions: [[27.5,72.5],[33.8,73.4]] },
-  desk: { pose: 'desk', positions: [[66.7,50.1],[75.2,52.7]] },
-  bowls: { pose: 'eat', positions: [[77,74.1],[92,70.8]] },
+  desk: { pose: 'desk', positions: [[66.5,49.6],[76.1,52.5]] },
+  bowls: { pose: 'eat', positions: [[75.2,73.7],[92.85,70.1]] },
 }
 export function dropTarget(x, y) {
   return ['desk','bowls','beanbag'].find(id => {

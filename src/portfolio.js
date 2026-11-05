@@ -4,11 +4,10 @@ export const profile = {
   github: 'https://github.com/alisaayz', handle: 'alisaayz',
   email: 'alisa.yh.zhu@gmail.com',
   linkedin: 'https://www.linkedin.com/in/alisa-zhu/',
-  aboutParagraphs: [
-    'I grew up across Vancouver, Hangzhou, and Shanghai, and have since lived in Boston, Toronto, and now Los Angeles. Moving between different cities and cultures made me fascinated by how people can look at the same problem from completely different perspectives.',
-    'That curiosity first drew me to finance, where decisions are shaped not only by numbers, but also by people, context, and judgment. I was drawn to the idea of understanding different viewpoints and using them to make better business decisions.',
-    'As AI and technology have become increasingly embedded in how we work and live, data has become another powerful lens through which perspectives are formed. That is what led me toward analytics: I want to understand not only what the data says, but the nuance behind it—how it is collected, interpreted, and ultimately used to influence decisions.',
-    'Today, I’m especially interested in the intersection of data, business, and technology, particularly in industries like healthcare where better analysis can directly shape strategy, products, and real-world outcomes. That interest ultimately led me to pursue an MSBA, where I’m building the technical and analytical skills to complement my business background and prepare for a career as a data analyst or business analyst.',
+  aboutSections: [
+    { heading: 'Where I’m from', body: 'I grew up in Vancouver, Hangzhou, and Shanghai, then lived in Boston and Toronto before moving to Los Angeles. Those places taught me how differently people can see the same problem.' },
+    { heading: 'From finance to analytics', body: 'Finance showed me how context and judgment shape decisions. Analytics got me curious about where data comes from, how people interpret it, and when it should change a decision.' },
+    { heading: 'What I’m working on now', body: 'I’m pursuing an MSBA at UCLA Anderson and building on my finance background with hands-on analytics. I’m especially interested in how data can improve business and product decisions in healthcare.' },
   ],
   phone: '',
   location: {

@@ -1,24 +1,29 @@
 <script setup>
 import { computed, nextTick, onMounted, onUnmounted, reactive, ref } from 'vue'
 import { galleryPhotos, wildCollage } from '../gallery.js'
-import { catActivities, catRoutes, dropTarget, nearestStop, propsInRoom } from '../study.js'
+import { catActivities, catRoutes, dropTarget, nearestStop, roomCloseups } from '../study.js'
 import StudyGlobe from './StudyGlobe.vue'
 import StudyCloseup from './StudyCloseup.vue'
 import StudyPennants from './StudyPennants.vue'
-import roomArt from '../assets/study/room.webp'
+import { preloadRoomViews, roomArt } from '../studyAssets.js'
 import './study-room.css'
 
 const emit = defineEmits(['close'])
-const sprites = import.meta.glob('../assets/study/*-*.webp', { eager: true, query: '?url', import: 'default' })
+const sprites = import.meta.glob(['../assets/study/ono-*.webp','../assets/study/yuzu-*.webp'], { eager: true, query: '?url', import: 'default' })
 const stride = (cat) => sprites[`../assets/study/${cat.name.toLowerCase()}-stride.webp`]
 const sprite = (cat) => sprites[`../assets/study/${cat.name.toLowerCase()}-${cat.pose}.webp`]
 const dialog = ref(null), stage = ref(null), closeButton = ref(null), closeup = ref(null)
 const selected = ref(null)
+const returning = ref(false)
 const artReady = ref(false)
 const entryKey = 'portfolio-study-entered'
 const introOpen = ref(true)
 const entryButton = ref(null)
 try { introOpen.value = localStorage.getItem(entryKey) !== 'yes' } catch { /* The room still works without storage. */ }
+function roomLoaded() {
+  artReady.value = true
+  if (!navigator.connection?.saveData) preloadRoomViews()
+}
 function enterRoom() {
   introOpen.value = false
   try { localStorage.setItem(entryKey,'yes') } catch { /* Continue without saving. */ }
@@ -35,7 +40,7 @@ const cats = reactive(['Ono','Yuzu'].map((name, i) => ({
   name, x: catRoutes[i][0][0], y: catRoutes[i][0][1], pose: 'walk',
   activity: '', waypoint: 0, facing: i === 0 ? 1 : -1, duration: 0, walking: false,
 })))
-let pan, catDrag, timer, previousOverflow, returnTarget
+let pan, catDrag, timer, previousOverflow, returnTarget, previousCamera
 const stepTimers = []
 const clamp = (v, low, high) => Math.min(high, Math.max(low, v))
 const sceneTransform = computed(() => `translate(-50%, -50%) translate(${camera.x}%, ${camera.y}%) scale(${camera.scale})`)
@@ -131,22 +136,28 @@ function endCat(event, cancel = false) {
   else if (!cancel) inspect({ id: cats[i].name, label: cats[i].name, x: cats[i].x, y: cats[i].y-4, cat: i }, event.currentTarget)
 }
 function inspect(object, trigger) {
+  if (returning.value) return
   returnTarget = trigger
+  previousCamera = { ...camera }
   selected.value = object
   instantCamera.value = false
-  const scale = object.cat != null ? 2.15 : object.id === 'globe' ? 1.45 : 2.05
+  const scale = Math.max(camera.scale, ({ monitor: 4.15, books: 3.8, photos: 3.1, record: 3.75, golf: 3.7, globe: 3.5 })[object.id] || 3.1)
   Object.assign(camera, { x: (50-object.x)*scale, y: (50-object.y)*scale, scale })
 }
 function leaveDetail() {
+  returning.value = true
   selected.value = null
-  resetCamera()
-  const target = returnTarget
-  nextTick(() => target?.focus({ preventScroll: true }))
+  instantCamera.value = false
+  Object.assign(camera, previousCamera || { x: 0, y: 0, scale: 1 })
+}
+function finishReturn() {
+  returning.value = false
+  nextTick(() => returnTarget?.focus({ preventScroll: true }))
 }
 function escape(event) {
   event.preventDefault()
   if (selected.value) closeup.value?.goBack()
-  else emit('close')
+  else if (!returning.value) emit('close')
 }
 function pinStyle(index) {
   return { left: `${4+index%3*32}%`, top: `${10+Math.floor(index/3)*45}%`, rotate: `${[-5,4,-3,4,-4,5][index]}deg` }
@@ -170,13 +181,13 @@ onUnmounted(() => {
   <dialog ref="dialog" class="room-dialog" aria-labelledby="room-title" @cancel="escape" @keydown.esc.stop="escape" @close="emit('close')">
     <header class="room-header" :inert="introOpen">
       <div class="room-title"><span>Behind the page</span><h2 id="room-title">The study room</h2></div>
-      <button ref="closeButton" class="room-close" type="button" @click="emit('close')" aria-label="Close study room">×</button>
+      <button v-if="!selected && !returning" ref="closeButton" class="room-close" type="button" @click="emit('close')" aria-label="Close study room">×</button>
     </header>
 
-    <div class="room-viewport" :inert="Boolean(selected) || introOpen" :class="{ 'is-panning': instantCamera }" @wheel.prevent="wheel"
+    <div class="room-viewport" :inert="Boolean(selected) || returning || introOpen" :class="{ 'is-panning': instantCamera }" @wheel.prevent="wheel"
       @pointerdown="startPan" @pointermove="movePan" @pointerup="stopPan" @pointercancel="stopPan" @lostpointercapture="stopPan">
       <div ref="stage" class="room-stage" :class="{ 'camera-instant': instantCamera, 'art-ready': artReady }" :style="{ transform: sceneTransform }">
-        <img class="room-art" :src="roomArt" alt="Isometric study with bamboo outside glass doors, a white desk, books, and a yellow beanbag" draggable="false" @load="artReady = true" />
+        <img class="room-art" :src="roomArt" alt="Isometric study with bamboo outside glass doors, a white desk, books, and a yellow beanbag" draggable="false" @load="roomLoaded" />
 
         <div class="cork-pins" aria-hidden="true">
           <div v-for="(photo, index) in galleryPhotos" :key="photo.caption" class="cork-print" :style="pinStyle(index)">
@@ -189,7 +200,7 @@ onUnmounted(() => {
         <StudyPennants />
         <div class="room-globe-prop" aria-hidden="true"><StudyGlobe /></div>
 
-        <button v-for="object in propsInRoom" :key="object.id" type="button" class="room-hotspot"
+        <button v-for="object in roomCloseups" :key="object.id" type="button" class="room-hotspot"
           :aria-label="object.label"
           :style="{ left: object.x+'%', top: object.y+'%', width: object.w+'%', height: object.h+'%', '--shape': object.shape ? `polygon(${object.shape})` : 'inset(0 round 14%)' }"
           @click="inspect(object, $event.currentTarget)">
@@ -198,7 +209,7 @@ onUnmounted(() => {
         </button>
 
         <button v-for="(cat,i) in cats" :key="cat.name" class="room-cat" type="button" :aria-label="cat.name"
-          :class="[cat.pose, { 'cat-held': draggingCat === i, 'cat-mouse': i === 1 && cat.activity === 'desk', 'cat-walking': cat.walking }]"
+          :class="[cat.pose, { 'cat-held': draggingCat === i, 'cat-mouse': i === 1 && cat.activity === 'desk', 'cat-keyboard': i === 0 && cat.activity === 'desk', 'cat-walking': cat.walking }]"
           :style="{ left: cat.x+'%', top: cat.y+'%', '--facing': cat.facing, '--travel': cat.duration+'ms' }"
           @pointerenter="hoveredCat = i" @pointerleave="hoveredCat = null"
           @pointerdown.stop="startCat($event,i)" @pointermove.stop="moveCat"
@@ -212,7 +223,7 @@ onUnmounted(() => {
       </div>
     </div>
 
-    <footer class="room-controls" v-if="!selected && !introOpen">
+    <footer class="room-controls" v-if="!selected && !returning && !introOpen">
       <p><span class="desktop-room-help">Scroll to zoom · Drag to move · Click objects to explore</span><span class="mobile-room-help">Drag to move · Tap objects to explore</span><br>Drag Ono or Yuzu to the beanbag, desk, or bowls.</p>
       <div class="zoom-controls" aria-label="Room zoom">
         <button type="button" aria-label="Zoom out" :disabled="camera.scale <= .75" @click="zoom(camera.scale/1.2)">−</button>
@@ -221,8 +232,11 @@ onUnmounted(() => {
       </div>
     </footer>
 
-    <StudyCloseup v-else-if="selected" ref="closeup" :object="selected" :cat-art="selected.cat != null ? sprite(cats[selected.cat]) : undefined"
-      @back="leaveDetail" @place-cat="(i,id) => { placeCat(i,id); leaveDetail() }" />
+    <Transition name="room-angle" @after-leave="finishReturn">
+      <StudyCloseup v-if="selected" ref="closeup" :object="selected"
+        :cat-art="selected.cat != null ? sprites[`../assets/study/${cats[selected.cat].name.toLowerCase()}-portrait.webp`] || sprite(cats[selected.cat]) : undefined"
+        @back="leaveDetail" />
+    </Transition>
     <div v-if="introOpen" class="room-intro">
       <div>
         <button ref="entryButton" type="button" @click="enterRoom">Enter the study</button>
