@@ -1,14 +1,11 @@
 <script setup>
-import { computed, nextTick, onMounted, onUnmounted, ref } from 'vue'
+import { defineAsyncComponent, nextTick, onMounted, onUnmounted, ref } from 'vue'
 import Icon from './components/Icon.vue'
-import { createBoundaryProgress } from './scrollGesture.js'
+import { galleryPhotos, wildCollage } from './gallery.js'
 import { profile } from './portfolio.js'
 import { resume } from './resume.js'
 import headshot from './assets/personal/headshot-button-down.png'
 import signature from './assets/personal/signature-transparent.png'
-import singaporePhoto from './assets/personal/singapore-private.png'
-import summerSeries from './assets/personal/summer-series-private.png'
-import wildCollage from './assets/personal/travel-grid-private.png'
 import onoPhoto from './assets/personal/ono.jpg'
 import yuzuPhoto from './assets/personal/yuzu.jpg'
 import uclaLogo from './assets/logos/ucla.svg'
@@ -22,14 +19,6 @@ const pages = [
   { label: 'Skills', hash: 'skills' },
   { label: 'Beyond the Resume', hash: 'beyond' },
 ]
-const galleryPhotos = [
-  { caption: 'Goldman Sachs Summer Series Asia presentation · Hong Kong, China', alt: 'Alisa presenting at Goldman Sachs Summer Series Asia, with other faces softly blurred', tile: null, src: summerSeries, position: 'center top' },
-  { caption: 'Golfing · Furry Creek, Vancouver, Canada', alt: 'Alisa golfing at Furry Creek near Vancouver', tile: 3 },
-  { caption: 'Traveling · Eigergletscher, Switzerland', alt: 'Alisa traveling at Eigergletscher in Switzerland', tile: 1 },
-  { caption: 'Traveling · Singapore, Singapore', alt: 'Alisa traveling in Singapore by a lily pond and city skyline', tile: null, src: singaporePhoto, position: 'center 30%' },
-  { caption: 'Traveling · Shangri-La, China', alt: 'Alisa with arms spread by a lake in Shangri-La City', tile: 0 },
-  { caption: 'UCLA beach day orientation · Los Angeles, United States', alt: 'Alisa smiling at UCLA beach day orientation', tile: 2 },
-]
 const resumeUrl = `${import.meta.env.BASE_URL}Alisa_Zhu_Resume.pdf`
 const pageFromHash = () => {
   const hash = location.hash.slice(1)
@@ -37,130 +26,13 @@ const pageFromHash = () => {
   return pages.some(page => page.hash === hash) ? hash : 'about'
 }
 const activePage = ref(pageFromHash())
-const activeIndex = computed(() => pages.findIndex(page => page.hash === activePage.value))
-const previousPage = computed(() => pages[activeIndex.value - 1])
-const nextPage = computed(() => pages[activeIndex.value + 1])
-const turningTo = ref(null)
-let activeSlide = null
-const accumulateBoundaryScroll = createBoundaryProgress()
-const boundaryProgress = ref(0)
-const boundaryDirection = ref(1)
-let touchStart = null
-function atPageBottom() {
-  return window.scrollY + window.innerHeight >= document.documentElement.scrollHeight - 4
-}
-function atPageTop() { return window.scrollY <= 4 }
-function ignoreGesture(target) {
-  return target instanceof Element && !!target.closest('.appearance-control, input, textarea, select')
-}
-function capturePagePane(source) {
-  const pane = document.createElement('div')
-  pane.className = 'scroll-slide-pane'
-  const bounds = source.getBoundingClientRect()
-  const copy = source.cloneNode(true)
-  copy.removeAttribute('id')
-  copy.querySelectorAll('[id]').forEach(node => node.removeAttribute('id'))
-  copy.classList.remove('page-sliding')
-  copy.querySelectorAll('.page-sliding').forEach(node => node.classList.remove('page-sliding'))
-  Object.assign(copy.style, { position: 'absolute', top: `${bounds.top}px`, left: '0', margin: '0', width: `${bounds.width}px`, visibility: 'visible' })
-  pane.append(copy)
-  return pane
-}
-function cancelSlide() {
-  if (!activeSlide) return
-  activeSlide.animations.forEach(animation => animation.cancel())
-  activeSlide.overlay.remove()
-  activeSlide = null
-}
-async function turnPage(direction = 1) {
-  const destination = pages[activeIndex.value + direction]
-  if (!destination || turningTo.value) return
-  const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
-  const fixedSidebar = getComputedStyle(document.querySelector('.sidebar')).position === 'fixed'
-  const source = fixedSidebar ? document.getElementById('main-content') : document.querySelector('.site-layout')
-  const bounds = source.getBoundingClientRect()
-  const overlay = document.createElement('div')
-  overlay.className = 'scroll-slide-overlay'
-  overlay.setAttribute('aria-hidden', 'true')
-  Object.assign(overlay.style, { left: `${bounds.left}px`, width: `${bounds.width}px` })
-  const outgoing = capturePagePane(source)
-  overlay.append(outgoing)
-  document.body.append(overlay)
-  const slide = { overlay, animations: [], landingY: 0 }
-  activeSlide = slide
-  turningTo.value = destination
-  navigate(destination.hash, true)
+const StudyRoom = defineAsyncComponent(() => import('./components/StudyRoom.vue'))
+const roomOpen = ref(false)
+const corner = ref(null)
+async function closeRoom() {
+  roomOpen.value = false
   await nextTick()
-  if (activeSlide !== slide) return
-  slide.landingY = direction < 0 ? Math.max(0, document.documentElement.scrollHeight - window.innerHeight) : 0
-  window.scrollTo({ top: slide.landingY, behavior: 'instant' })
-  const incoming = capturePagePane(source)
-  overlay.append(incoming)
-  if (!reducedMotion) {
-    const options = { duration: 650, easing: 'cubic-bezier(.22,.7,.2,1)', fill: 'forwards' }
-    slide.animations = [
-      outgoing.animate([{ transform: 'translateY(0)' }, { transform: `translateY(${-direction * 100}%)` }], options),
-      incoming.animate([{ transform: `translateY(${direction * 100}%)` }, { transform: 'translateY(0)' }], options),
-    ]
-    await Promise.all(slide.animations.map(animation => animation.finished.catch(() => {})))
-  }
-  if (activeSlide !== slide) return
-  window.scrollTo({ top: slide.landingY, behavior: 'instant' })
-  cancelSlide()
-  turningTo.value = null
-  await nextTick()
-  document.getElementById('main-content')?.focus({ preventScroll: true })
-}
-function applyBoundaryScroll(delta, threshold = 600) {
-  if (turningTo.value) return
-  const direction = Math.sign(delta)
-  const destination = pages[activeIndex.value + direction]
-  const result = accumulateBoundaryScroll({
-    delta,
-    atEdge: direction > 0 ? atPageBottom() : atPageTop(),
-    blocked: !destination,
-    threshold,
-  })
-  boundaryDirection.value = direction
-  boundaryProgress.value = result.progress
-  if (result.direction) nextTick(() => turnPage(result.direction))
-}
-function handleWheel(event) {
-  if (event.ctrlKey) return
-  if (turningTo.value) {
-    if (event.cancelable) event.preventDefault()
-    return
-  }
-  const delta = event.deltaY * (event.deltaMode === 1 ? 16 : event.deltaMode === 2 ? window.innerHeight : 1)
-  if (delta) applyBoundaryScroll(delta)
-}
-function handleTouchStart(event) {
-  const point = event.touches.length === 1 ? event.touches[0] : null
-  touchStart = point && !ignoreGesture(event.target) && !turningTo.value
-    ? { x: point.clientX, lastY: point.clientY } : null
-}
-function handleTouchMove(event) {
-  if (turningTo.value) {
-    if (event.cancelable) event.preventDefault()
-    return
-  }
-  const point = event.touches.length === 1 ? event.touches[0] : null
-  if (!touchStart || !point || Math.abs(touchStart.x - point.clientX) > 80) return
-  const delta = touchStart.lastY - point.clientY
-  touchStart.lastY = point.clientY
-  if (delta) applyBoundaryScroll(delta, 220)
-}
-function cancelTouch() { touchStart = null }
-function clearProgressAwayFromEdge() {
-  if (turningTo.value && activeSlide) {
-    if (Math.abs(window.scrollY - activeSlide.landingY) > 1) window.scrollTo({ top: activeSlide.landingY, behavior: 'instant' })
-    return
-  }
-  const atEdge = boundaryDirection.value > 0 ? atPageBottom() : atPageTop()
-  if (!atEdge && !turningTo.value) {
-    accumulateBoundaryScroll({ atEdge: false })
-    boundaryProgress.value = 0
-  }
+  corner.value?.focus({ preventScroll: true })
 }
 const systemTheme = window.matchMedia('(prefers-color-scheme: dark)')
 const themePreference = ref(document.documentElement.dataset.themePreference || 'system')
@@ -169,7 +41,7 @@ function syncTheme() {
   isDark.value = themePreference.value === 'system' ? systemTheme.matches : themePreference.value === 'dark'
   const theme = isDark.value ? 'dark' : 'light'
   document.documentElement.dataset.theme = theme
-  document.querySelector('meta[name="theme-color"]')?.setAttribute('content', isDark.value ? '#111a27' : '#ffffff')
+  document.querySelector('meta[name="theme-color"]')?.setAttribute('content', isDark.value ? '#22231f' : '#fbf9f3')
 }
 function chooseTheme(preference) {
   themePreference.value = preference
@@ -177,47 +49,29 @@ function chooseTheme(preference) {
   try { localStorage.setItem('portfolio-appearance', preference) } catch { /* The selection still works without storage. */ }
   syncTheme()
 }
-function navigate(page, duringTurn = false) {
-  if (!duringTurn) { cancelSlide(); turningTo.value = null }
-  touchStart = null
-  boundaryProgress.value = 0
-  accumulateBoundaryScroll({ atEdge: false })
+async function navigate(page) {
+  roomOpen.value = false
   activePage.value = page
-  history.pushState(null, '', `#${page}`)
+  if (location.hash !== `#${page}`) history.pushState(null, '', `#${page}`)
+  await nextTick()
   window.scrollTo({ top: 0, behavior: 'instant' })
+  document.getElementById('main-content')?.focus({ preventScroll: true })
 }
 function syncPage() {
   if (location.hash === '#main-content') return
-  cancelSlide()
-  turningTo.value = null
-  boundaryProgress.value = 0
-  accumulateBoundaryScroll({ atEdge: false })
+  roomOpen.value = false
   activePage.value = pageFromHash()
-  window.scrollTo({ top: 0, behavior: 'instant' })
 }
 onMounted(() => {
   syncTheme()
   systemTheme.addEventListener('change', syncTheme)
   window.addEventListener('popstate', syncPage)
   window.addEventListener('hashchange', syncPage)
-  window.addEventListener('wheel', handleWheel, { passive: false, capture: true })
-  window.addEventListener('touchstart', handleTouchStart, { passive: true })
-  window.addEventListener('touchmove', handleTouchMove, { passive: false })
-  window.addEventListener('touchend', cancelTouch, { passive: true })
-  window.addEventListener('scroll', clearProgressAwayFromEdge, { passive: true })
-  window.addEventListener('touchcancel', cancelTouch, { passive: true })
 })
 onUnmounted(() => {
   systemTheme.removeEventListener('change', syncTheme)
   window.removeEventListener('popstate', syncPage)
   window.removeEventListener('hashchange', syncPage)
-  window.removeEventListener('wheel', handleWheel, true)
-  window.removeEventListener('touchstart', handleTouchStart)
-  window.removeEventListener('touchmove', handleTouchMove)
-  window.removeEventListener('touchend', cancelTouch)
-  window.removeEventListener('scroll', clearProgressAwayFromEdge)
-  window.removeEventListener('touchcancel', cancelTouch)
-  cancelSlide()
 })
 </script>
 
@@ -245,12 +99,13 @@ onUnmounted(() => {
         </div>
       </div>
     </aside>
-    <main id="main-content" tabindex="-1" :class="{ 'page-sliding': turningTo }">
-      <section v-if="previousPage" class="section-title-preview previous-section-preview" :aria-label="`Previous section: ${previousPage.label}`"><button type="button" @click="turnPage(-1)" :aria-label="`Return to ${previousPage.label}`">{{ previousPage.label }}</button><div class="boundary-progress" role="progressbar" aria-label="Scroll to previous section" :aria-valuenow="boundaryDirection < 0 ? Math.round(boundaryProgress * 100) : 0" aria-valuemin="0" aria-valuemax="100"><span :style="{ transform: `scaleX(${boundaryDirection < 0 ? boundaryProgress : 0})` }"></span></div></section>
+    <main id="main-content" tabindex="-1">
       <section v-if="activePage === 'about'" class="about-page" aria-label="About Me">
         <div class="hero-copy">
-          <p class="eyebrow">Data Analytics <span>•</span> Finance <span>•</span> Technology</p>
-          <h2>Turning data into<br>better <em>business decisions.</em></h2>
+          <p class="eyebrow">01 <span>/</span> About Me</p>
+          <h2>Alisa Zhu<span class="title-period">.</span></h2>
+          <p class="about-tagline">Turning data into better business decisions.</p>
+          <p class="about-meta">Data analytics · Finance · Technology</p>
         </div>
         <div class="hero-visual">
           <div class="headshot-photo"><img :src="headshot" alt="Alisa Zhu headshot" /></div>
@@ -355,8 +210,10 @@ onUnmounted(() => {
           </div>
         </div>
       </footer>
-      <section v-if="nextPage" class="section-title-preview next-section-title" :aria-label="`Next section: ${nextPage.label}`"><button type="button" @click="turnPage(1)" :aria-label="`Continue to ${nextPage.label}`">{{ nextPage.label }}</button><div class="boundary-progress" role="progressbar" aria-label="Scroll to next section" :aria-valuenow="boundaryDirection > 0 ? Math.round(boundaryProgress * 100) : 0" aria-valuemin="0" aria-valuemax="100"><span :style="{ transform: `scaleX(${boundaryDirection > 0 ? boundaryProgress : 0})` }"></span></div></section>
     </main>
-
   </div>
+  <button ref="corner" class="page-fold" type="button" aria-label="Open the study room" aria-haspopup="dialog" :aria-expanded="roomOpen" @click="roomOpen = true">
+    <span class="fold-face" aria-hidden="true">↗</span><span class="fold-label">The study room</span>
+  </button>
+  <StudyRoom v-if="roomOpen" @close="closeRoom" @projects="navigate('projects')" />
 </template>

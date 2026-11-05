@@ -1,37 +1,26 @@
 # Alisa Zhu — Personal Website
 
-A responsive Vue 3 website based on the supplied visual reference: a white canvas, blue accents, serif headline, numbered sidebar navigation, and an arch-shaped UCLA image.
+A Vue portfolio with a paper-style layout, six sections, and a folded corner that opens an interactive isometric study. The page fold and object close-ups take inspiration from [Pin Chen's site](https://pinchen.me/).
 
 ## Local development
 
 ```sh
-npm install
+npm ci
 npm run dev
-```
-
-## Personalize
-
-Edit `src/portfolio.js` for the name, profile tag, email, LinkedIn, GitHub, and paragraph beneath the About Me slogan. The sidebar keeps email and LinkedIn visible below the navigation.
-
-Edit `src/resume.js` for the education, experience, and technical skills. Experience displays professional history. Education has a separate tab after Experience, including the UCLA and Wake Forest logos. Skills displays the technical skill groups. View Resume opens `public/Alisa_Zhu_Resume.pdf`; Download PDF downloads that same file. Update both the PDF and resume data when revising the resume. Legacy `#resume` links open Experience.
-
-Projects displays Coming... until real projects are available. The site has no Contact tab or hero call-to-action buttons.
-
-The campus image is displayed from the supplied `src/assets/template-reference.png` using a CSS crop. Text and navigation are native HTML. Inter and Cormorant Garamond load from Google Fonts with local fallback fonts.
-
-Appearance defaults to the system light/dark setting and tracks changes while the site is open. The sidebar offers System, Light, and Dark choices; explicit choices are saved between visits. Email and LinkedIn remain in the sidebar; GitHub and the sidebar education line are omitted. Navigation supports hash links and browser back/forward, with responsive layouts and keyboard focus indicators.
-
-## Production and hosting
-
-```sh
 npm run build
-npm run preview
 ```
 
-GitHub repository: https://github.com/alisaayz/alisaayz.github.io
+## Update the portfolio
 
-Live site: https://alisaayz.github.io/
+- `src/portfolio.js`: profile and About Me copy.
+- `src/resume.js`: experience, education and skills. Update `public/Alisa_Zhu_Resume.pdf` separately. Old `#resume` links open Experience.
+- `src/gallery.js`: photo captions and images shared by Beyond the Resume and the study corkboard.
+- `src/App.vue`: section navigation and Projects content. Appearance follows the system unless a visitor saves a light or dark override.
 
-GitHub Pages uses the GitHub Actions source. The workflow in `.github/workflows/deploy.yml` builds with `--base=/` and publishes `dist/` on pushes to `main`.
+## Update the room
 
-Education logos are stored locally in `src/assets/logos/`. UCLA's white wordmark comes from https://www.ucla.edu/img/logo-ucla.svg and is displayed on a blue tile. Wake Forest's WF image comes from https://prod.wp.cdn.aws.wfu.edu/sites/544/2026/03/Brand_WF.webp (linked from its brand guide).
+- `src/study.js`: ten book slots, object hit areas, cat paths and cat landing positions. Coordinates are percentages of the square room artwork.
+- `src/components/StudyRoom.vue`: object close-ups and interactions. The monitor opens Projects. The turntable, golf bag and bookshelf can be inspected; music and mini golf are reserved for future updates.
+- `src/assets/study/`: room artwork, cat poses and the globe texture. The globe's land outlines are from [Natural Earth](https://www.naturalearthdata.com/), public domain.
+
+Pushes to `main` build and publish through `.github/workflows/deploy.yml` at [alisaayz.github.io](https://alisaayz.github.io/).

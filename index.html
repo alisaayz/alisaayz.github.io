@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="theme-color" content="#ffffff" />
+    <meta name="theme-color" content="#fbf9f3" />
     <script>
       // Default to system appearance and apply a saved override before the first paint.
       {
@@ -16,7 +16,7 @@
         const theme = preference === 'system' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : preference
         document.documentElement.dataset.themePreference = preference
         document.documentElement.dataset.theme = theme
-        document.querySelector('meta[name="theme-color"]').content = theme === 'light' ? '#ffffff' : '#111a27'
+        document.querySelector('meta[name="theme-color"]').content = theme === 'light' ? '#fbf9f3' : '#22231f'
       }
     </script>
     <meta name="description" content="Alisa Zhu — MSBA student at UCLA Anderson School of Management. Explore my background, projects, and journey in business analytics." />
