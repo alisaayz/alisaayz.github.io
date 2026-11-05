@@ -42,16 +42,11 @@
 .cork-print { position: absolute; width: 27%; background: #fdf2dc; padding: 2% 1.5% 3%; box-shadow: 0 2px 3px #3a221c68 }
 .cork-print::before { content: ''; position: absolute; width: 9%; aspect-ratio: 1; left: 48%; top: 5%; z-index: 1; border-radius: 50%; background: #b16a4b; box-shadow: .5px .5px 1px #371b19 }
 .cork-print .gallery-image { display: block; aspect-ratio: 1.42; background: #d6cab2 }
-.room-flag { position: absolute; pointer-events: none; font: 750 1.5cqw/1 var(--sans); color: #fae0a3; transform: skewY(17deg); text-shadow: 0 .5px 1px #352817 }
-.flag-ucla { top: 31.65%; left: 84.7% }
-.flag-wfu { top: 39.2%; left: 84.8% }
-.room-screen { position: absolute; left: 58%; top: 34.8%; width: 19.5%; height: 6.6%; transform: skewY(22deg); transform-origin: left top; pointer-events: none; display: grid; place-content: center; text-align: center; gap: .8cqw; background: #374340; color: #f9ebcc; font: 1.75cqw/1 var(--mono) }
 .room-hotspot {
   position: absolute; transform: translate(-50%,-50%); z-index: 1;
   display: block; padding: 0; border: 0; background: transparent; pointer-events: none;
 }
 .hotspot-hit { position: absolute; inset: 0; pointer-events: auto; clip-path: var(--shape); transform: scale(1); transition: transform .18s,background .18s; }
-.room-hotspot:hover .hotspot-hit,.room-hotspot:focus-visible .hotspot-hit { background: #fff9df31; backdrop-filter: brightness(1.12) saturate(1.1); transform: scale(1.07) }
 .room-hotspot:hover,.room-hotspot:focus-visible { z-index: 3 }
 .room-tag {
   opacity: 0; pointer-events: none; position: absolute; bottom: 100%; left: 50%;
@@ -59,10 +54,7 @@
   color: #fff7e7; font: 550 max(1.75cqw,10px)/1.2 var(--sans);
   padding: .26em .62em; border-radius: 4px; transition: opacity .15s,translate .15s;
 }
-.room-hotspot:hover .room-tag,.room-hotspot:focus-visible .room-tag,.room-cat:hover .room-tag,.room-cat:focus-visible .room-tag,.cat-held .room-tag,.drop-ready .room-tag { opacity: 1; translate: -50% -5px }
-.drop-ready .hotspot-hit { background: #fff6cb36; pointer-events: none }
-.drop-active .hotspot-hit { background: #dfeea083; backdrop-filter: brightness(1.12) }
-.drop-active .room-tag { background: #566739 }
+.room-hotspot:hover .room-tag,.room-hotspot:focus-visible .room-tag,.room-cat:hover .room-tag,.room-cat:focus-visible .room-tag,.cat-held .room-tag { opacity: 1; translate: -50% -5px }
 .room-cat {
   position: absolute; transform: translate(-50%,-84%); z-index: 4; display: grid; place-items: center;
   width: 9.2%; height: 10.5%; border: 0; padding: 0; background: none; cursor: grab;
@@ -79,11 +71,10 @@
 .cat-effect { position: absolute; right: 9%; top: -3%; color: #fcf1d2; font: bold 3cqw/1 Georgia,serif; text-shadow: 0 1px 2px #3e4b2b; pointer-events: none; animation: cat-breath 3.6s ease-in-out infinite }
 @keyframes cat-breath { 50% { scale: 1.035 } }
 @keyframes cat-nibble { 50% { rotate: -5deg; translate: -.3cqw .25cqw } }
-.room-globe-prop { position: absolute; pointer-events: none; left: 66.4%; top: 71.6%; width: 7.6%; }
+.room-globe-prop { position: absolute; pointer-events: none; left: 66.4%; top: 71.6%; width: 7.6%; filter:drop-shadow(.3cqw .35cqw .3cqw #59392544); }
 .study-globe { position: relative; aspect-ratio: .8; width: 100%; display: grid; place-items: start center; isolation: isolate }
-.study-globe::before { content:''; position: absolute; inset: 0 4% auto; aspect-ratio: 1; border: max(1px,.35cqw) solid #765b3f; border-radius: 50%; transform: rotate(-23deg) scaleX(.82); z-index: 2; pointer-events: none; clip-path: polygon(0 0,100% 0,100% 100%,67% 100%,67% 15%,0 45%) }
-.study-globe::after { content: ''; position: absolute; z-index: -1; bottom: 1%; left: 18%; width: 64%; height: 29%; background: #9f7650; box-shadow: 0 3px 4px #39240c49; clip-path: polygon(40% 0,60% 0,65% 62%,100% 78%,100% 93%,68% 100%,31% 100%,0 93%,0 78%,35% 62%) }
-.study-globe canvas { width: 86%; height: auto; aspect-ratio: 1; border-radius: 50%; background: #a4b9a8; }
+.study-globe canvas { width: 86%; height:auto; aspect-ratio:1; border-radius:50%; margin-top:7%; z-index:1; }
+.globe-mount { position:absolute; inset:0; width:100%; height:100%; }
 .study-globe.globe-interactive { width: min(144px,40vw); margin: 3px auto 8px }
 .globe-interactive canvas { cursor: grab; touch-action: none }
 .globe-interactive canvas:active { cursor: grabbing }
@@ -98,32 +89,8 @@
 .zoom-controls { display: flex; pointer-events: auto; border: 1px solid var(--room-line); background: var(--room-paper); border-radius: 5px; overflow: hidden; font: 500 .74rem/1 var(--mono) }
 .zoom-controls button { border: 0; background: transparent; min-height: 39px; min-width: 37px; padding: 6px 8px }
 .zoom-controls button+button { border-left: 1px solid var(--room-line) }
-.zoom-controls button:hover:not(:disabled),.detail-back:hover { background: #e9dfce }
+.zoom-controls button:hover:not(:disabled) { background: #e9dfce }
 .zoom-controls button:focus-visible { outline-offset: -3px }
-.room-detail { position: absolute; z-index: 7; width: min(470px,calc(100% - 24px)); max-height: 62%; overflow: auto; bottom: max(16px,env(safe-area-inset-bottom)); left: 50%; translate: -50% 0; border: 1px solid var(--room-line); border-radius: 8px; background: var(--room-paper); padding: 13px 16px 15px; box-shadow: 0 8px 30px #4d342b25; }
-.detail-heading { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 9px }
-.detail-heading h3 { font-size: 1.25rem; font-weight: 400 }
-.detail-back,.cat-detail-actions button,.photo-arrows button { padding: 5px 9px; border: 1px solid var(--room-line); background: var(--room-paper); border-radius: 4px; font: .76rem/1.5 var(--sans) }
-.room-detail p,.room-detail figcaption { font: .82rem/1.55 var(--sans); color: var(--room-muted) }
-.room-photo-list { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 7px }
-.room-photo-list button { padding: 3px; border: 1px solid var(--room-line); background: #fffbef; min-width: 0 }
-.room-photo-list button:hover { border-color: #5b6745 }
-.room-photo-list .gallery-image { display: block }
-.room-photo-viewer figure { width: min(100%,300px); margin: auto }
-.room-photo-viewer figcaption { margin-top: 6px }
-.photo-arrows { display: flex; gap: 12px; justify-content: center; align-items: center; margin-top: 8px; font: .77rem var(--mono) }
-.computer-window { border: 1px solid #807a63; border-radius: 5px; overflow: hidden; background: #fffaf0 }
-.room-detail .computer-bar { font: 500 .68rem/1.6 var(--mono); background: #465346; color: #fff8e5; padding: 6px 9px; }
-.computer-bar span { color: #ddc89d; margin-right: 10px }
-.computer-body { padding: 11px 12px 14px }
-.computer-body h4 { font-size: 1.06rem }
-.computer-body button { border: 0; border-radius: 3px; padding: 6px 10px; margin-top: 8px; background: #465346; color: white; font: .76rem/1.4 var(--sans) }
-.book-spines { display: flex; align-items: end; gap: 3px; height: 83px; border-bottom: 5px solid #997151; margin-bottom: 9px }
-.book-spines button { flex: 1 1 0; min-width: 0; height: var(--book-height); border: 0; border-left: 3px solid #36251c27; background: var(--book-color); color: #23190f; font: 650 .65rem/1 var(--mono); padding: 4px 0; box-shadow: inset 0 3px #ffefd957; transition: translate .2s }
-.book-spines button:hover,.book-spines button[aria-pressed="true"] { translate: 0 -5px; outline: 2px solid #494f37; outline-offset: 1px }
-.book-cover { width: 80px; vertical-align: middle; margin-right: 12px }
-.cat-detail-actions { display: flex; flex-wrap: wrap; gap: 6px }
-.cat-detail-actions p { flex-basis: 100% }
 .room-status { position: absolute; z-index: 5; bottom: clamp(58px,10vh,100px); left: 50%; translate: -50% 0; padding: 4px 9px; background: #f5eee2f0; border-radius: 4px; white-space: nowrap; font: .73rem/1.55 var(--sans); color: var(--room-muted); pointer-events: none }
 .room-status:empty { padding: 0 }
 @media(max-width: 700px) {
@@ -135,4 +102,116 @@
   .room-controls p { font-size: .66rem }
   .zoom-controls button { min-width: 30px; padding-inline: 5px }
 }
-@media(max-height: 510px) { .room-stage { top: 46% } .room-title span { display: none } .room-detail { left: auto; right: 12px; translate: none; max-width: min(350px,52vw); } }
+@media(max-height: 510px) { .room-stage { top: 46% } .room-title span { display: none } }
+
+/* The same pennants share the wall's slant in the overview. */
+.study-pennants:not(.pennants-flat) { position: absolute; left: 84.45%; top: 30.55%; width: 4%; height: 11%; pointer-events: none }
+.study-pennants:not(.pennants-flat) .study-pennant { position: absolute; left: 0; width: 100%; transform: skewY(22.8deg); transform-origin: left center }
+.study-pennants:not(.pennants-flat) .pennant-ucla { top: 8%; width: 78% }
+.study-pennants:not(.pennants-flat) .pennant-wfu { top: 63%; width: 66%; margin-left: 2% }
+.study-pennant img,.study-pennant svg { width: 100%; height: auto; display: block }
+.pennants-flat { display: grid; gap: 18px; width: min(600px,90%); padding: 20px 0 }
+.pennants-flat .study-pennant { display: grid; align-items: center; justify-items: start; width: 100%; aspect-ratio: 3.1; clip-path: polygon(0 0,100% 50%,0 100%); background: #c5a267; position: relative; isolation: isolate; padding-left: 8% }
+.pennants-flat .study-pennant::before { content:''; position:absolute; inset: 5%; clip-path: polygon(0 0,100% 50%,0 100%); z-index:-1; background: #2b4f74 }
+.pennants-flat .pennant-wfu::before { background: #292723 }
+.pennants-flat img { width: 32% }
+.pennants-flat svg { width: 25% }
+.item-view { position: absolute; inset: 0; z-index: 5; background: #f5eee2; opacity: 1; animation: item-reveal .37s .22s both; }
+@keyframes item-reveal { from { opacity: 0 } to { opacity: 1 } }
+.item-return { position: absolute; z-index: 4; left: clamp(14px,4vw,52px); top: clamp(78px,16vh,110px); border: 1px solid #d1c3af; border-radius: 20px; padding: 6px 13px; background: #fbf6eb; font: 550 .74rem/1.45 var(--sans) }
+.item-return:hover { background: #e9dfce }
+.item-scene { position: absolute; inset: clamp(125px,20vh,156px) 0 0; display: grid; place-items: center; overflow: auto; padding: 12px clamp(16px,6vw,90px) 26px; overscroll-behavior: contain }
+.room-dialog:has(.item-view) .room-header { z-index: 8 }
+.room-dialog:has(.item-view) .room-status { z-index: 4 }
+.standalone-object { max-width: min(85vw,690px); max-height: min(66dvh,620px); object-fit: contain; filter: drop-shadow(0 18px 17px #49321736) }
+.item-bowls .standalone-object { max-width: min(73vw,550px) }
+.front-cat-view { display: grid; justify-items:center; align-content: center; gap: 10px }
+.front-cat-view img { width: min(52vw,290px); height: min(43dvh,300px); object-fit: contain; filter: drop-shadow(0 14px 16px #523f2f48) }
+.cat-detail-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px }
+.cat-detail-actions button { padding: 5px 9px; border: 1px solid var(--room-line); background: var(--room-paper); border-radius: 4px; font: .76rem/1.5 var(--sans) }
+
+/* Front-on close-ups use the same cork and oak from the room artwork. */
+.front-cork,.front-shelves { position: relative; isolation: isolate; box-shadow: 0 12px 24px #4a322035; }
+.front-cork { width: min(78vw,790px,101svh); aspect-ratio: 330/218; overflow: hidden; background:#b78761 }
+.front-cork > svg,.front-shelves > svg { position: absolute; width: 100%; height: 100%; inset: 0; }
+.front-prints { position: absolute; inset: 11% 9%; display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); align-items:center; gap: 8% 6%; }
+.front-print { position: relative; background:#fff3de; border:0; padding: 6% 5% 10%; box-shadow: 0 3px 6px #42271978; transform: rotate(var(--print-angle)); transition: transform .2s; min-width:0 }
+.front-print::before { content:''; position:absolute; z-index:1; width: 6%; aspect-ratio: 1; left: 47%; top: 1%; border-radius:50%; background: #ad6447; box-shadow: 1px 2px 2px #381912a0 }
+.front-print:hover,.front-print:focus-visible { transform: rotate(0) scale(1.08); z-index: 2 }
+.front-print .gallery-image { display: block; }
+.print-focus,.book-focus { position: absolute; z-index:3; inset: 0; display: flex; align-items:center; justify-content:center; gap: 12px; background:#f5eee2e8; padding:14px }
+.print-focus figure { width: min(70vw,95svh,760px); padding: 8px 8px 12px; background:#fff7e9; box-shadow:0 8px 26px #4a32204a }
+.print-focus figcaption { margin: 8px 4px 0; font: .74rem/1.4 var(--sans) }
+.print-arrow { border:1px solid var(--room-line); background:var(--room-paper); border-radius:50%; min-width:34px; min-height:34px; padding:0 }
+.front-shelves { width: min(76vw,500px,57svh); aspect-ratio: 181/233; overflow: hidden; background:#e6d4b8 }
+.shelf-book { position:absolute; height: 33%; width: 12%; border:0; padding:0; background:transparent; }
+.book-tab { position:absolute; white-space:nowrap; left:50%; bottom:100%; translate:-50% 0; background:#413a2f; color:#fff7e7; border-radius:3px; padding:4px 7px; opacity:0; font: .72rem/1.4 var(--sans); pointer-events:none }
+.shelf-book:hover,.shelf-book:focus-visible { z-index:1 }
+.shelf-book:hover .book-tab,.shelf-book:focus-visible .book-tab { opacity:1 }
+.book-jacket { display:grid; place-items:center; width: min(36vw,230px); aspect-ratio: 2/3; border-left: .55rem solid #2c241e45; color:#221a12; box-shadow:8px 10px 0 #f6eddf,9px 11px 15px #3b241747; font-size:1.25rem; text-align:center }
+.book-jacket img { display:block; width:100%; height:100%; object-fit:cover }
+
+/* The README stays inside the computer screen and has its own scroll. */
+.monitor-set { display:grid; justify-items:center; width:min(100%,1020px); }
+.front-monitor { z-index:2; width: min(100%,900px,135svh); border: clamp(6px,1vw,13px) solid #312f2c; padding:2px; background:#191c1a; border-radius: 7px; box-shadow: 0 1px 0 1px #151510,0 12px 30px #513a2e43; }
+.monitor-browser { display:grid; grid-template-rows:auto minmax(0,1fr); height:clamp(205px,50svh,510px); min-width:0; background:#fdfaf3; border-radius:3px; overflow:hidden }
+.monitor-address { display:flex; align-items:center; gap: clamp(7px,2vw,19px); background:#414a3e; color:#fff3dc; font: 500 .72rem/1.4 var(--mono); padding:7px 11px }
+.monitor-address span { color:#e0b991; white-space:nowrap }
+.monitor-address a { overflow-wrap:anywhere }
+.monitor-readme { overflow:auto; overscroll-behavior:contain; scrollbar-gutter:stable; padding:clamp(12px,2.5vw,28px); font: .83rem/1.56 var(--sans); color:#292922 }
+.monitor-readme:focus-visible { outline-offset:-3px }
+.monitor-readme h1 { font: 650 clamp(1.1rem,2.4vw,1.74rem)/1.2 var(--sans); padding-bottom:8px; border-bottom:1px solid #d8d1c0 }
+.monitor-readme h2,.monitor-readme h3,.monitor-readme h4 { font: 650 1rem/1.25 var(--sans); margin-top:18px }
+.monitor-readme p,.monitor-readme pre,.monitor-readme table { margin-top:9px }
+.monitor-readme ul,.monitor-readme ol { padding-left:1.35rem; }
+.monitor-readme img { max-width:100%; height:auto }
+.monitor-readme pre { overflow:auto; padding:10px; background:#eeeadf; font-size:.74rem }
+.monitor-readme table { border-collapse:collapse }
+.monitor-readme td,.monitor-readme th { border:1px solid #ddd4c3; padding:4px 6px; }
+.monitor-stand { width:9%; height:clamp(19px,5svh,45px); z-index:1; background:linear-gradient(90deg,#33312d,#4f4940 43%,#302c27); border-bottom:3px solid #251d18; border-radius: 0 0 8% 8%; box-shadow:0 3px 4px #4c3a2860; }
+.front-desk { width:100%; height:clamp(35px,8svh,78px); margin-top:-4px; display:flex; align-items:center; justify-content:center; gap:6%; background:linear-gradient(#fff9ee,#f8f0e0); border-bottom:8px solid #e3d5c2; border-radius:4px 4px 2px 2px; box-shadow:0 13px 21px #634d3625; }
+.front-keyboard { width:33%; height:58%; border:2px solid #d9cfbd; border-radius:4px; background: repeating-linear-gradient(90deg,transparent 0 6%,#e2d8c9 6.3% 7%),repeating-linear-gradient(0deg,#faf6ec 0 20%,#e0d5c4 21% 25%); transform:perspective(340px) rotateX(33deg); box-shadow:0 2px 1px #aa9e89 }
+.front-mouse { width:4%; height:49%; border-radius:52% 52% 45% 45%; background:linear-gradient(120deg,#fffdf8,#dcd2c0); transform:perspective(130px) rotateX(22deg); box-shadow:0 2px 2px #a89c88; }
+
+.listening-station { width:min(100%,1050px); display:grid; grid-template-columns:minmax(0,1.2fr) minmax(0,1fr); align-items:center; gap:clamp(18px,5vw,85px); }
+.record-front { display:block; max-width:100%; width:100%; height:min(59svh,570px); object-fit:contain; object-position:center; filter: drop-shadow(0 15px 14px #53321d3b); }
+.record-selection { border-top:1px solid #beaa8f; border-bottom:1px solid #beaa8f; padding:18px 0 }
+.record-selection h3 { font-size:clamp(1.35rem,3.5vw,2rem) }
+.record-selection p { font: .83rem/1.5 var(--sans); margin-top:9px; color:var(--room-muted) }
+.record-selection ul { padding:0; margin:9px 0; list-style:none }
+.record-selection li+li { margin-top:5px }
+.record-selection button { border:1px solid var(--room-line); border-radius:4px; background:var(--room-paper); padding:5px 10px; font: .8rem/1.5 var(--sans) }
+.record-selection button[aria-pressed=true] { background:#e3ddcb }
+.record-selection iframe { display:block; border:0; width:100%; height:166px; margin-top:9px }
+.item-globe .study-globe.globe-interactive { width:min(67vw,58svh,480px); margin:auto }
+@media(max-width:600px) {
+  .item-return { top:67px }
+  .item-scene { inset:106px 0 0; padding-inline: 14px }
+  .monitor-browser { height: min(56svh,510px) }
+  .front-cork { width: min(95vw,700px); }
+  .print-focus { gap:5px; padding: 6px }
+  .print-arrow { min-width:27px; min-height:31px }
+  .listening-station { grid-template-columns: minmax(0,1fr); gap:14px; }
+  .record-front { height:min(45svh,390px) }
+}
+@media(max-height:500px) and (min-width:601px) {
+  .item-return { top:54px }
+  .item-scene { top:86px; padding-block:4px 8px }
+  .monitor-browser { height:49svh; }
+}
+
+.cat-stride {
+  display:block; width:100%; height:100%; pointer-events:none; background-size:400% 100%; background-repeat:no-repeat;
+  transform:scaleX(var(--facing)); filter:drop-shadow(0 .42cqw .32cqw #3d211f55); transition:scale .16s;
+}
+.cat-walking .cat-stride { animation:cat-stride .9s steps(4,end) infinite; }
+.room-cat:hover .cat-stride,.room-cat:focus-visible .cat-stride { scale:1.08 }
+.room-cat.cat-held .cat-stride { scale:1.14; animation:none }
+@keyframes cat-stride { to { background-position:133.3333% 0 } }
+.room-intro { position:absolute; inset:0; z-index:10; display:grid; place-items:center; padding:20px; text-align:center; background:#28251fc4; color:#fff8eb }
+.room-intro button { color:inherit; border:1px solid #fff1d8; border-radius:32px; padding:11px 20px; background:#403a30; font:600 .9rem/1.5 var(--mono) }
+.room-intro button:hover { background:#595041 }
+.room-intro button:focus-visible { outline-color:#fff1d8 }
+.room-intro p { margin-top:14px; font:.78rem/1.7 var(--mono) }
+
+.room-stage:not(.art-ready) > :not(.room-art) { visibility: hidden }

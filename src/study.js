@@ -37,3 +37,6 @@ export const shelfBooks = [
   '#a39373','#777d64','#c19e7c','#e2d4b8','#584d40',
   '#9b725d','#aaac92','#dfc1a0','#526461','#b89f7a',
 ].map((color, index) => ({ color, title: '', cover: '', height: 66 + ((index * 17) % 33) }))
+
+// Add public SoundCloud tracks or playlists: { title: 'Name', url: 'https://soundcloud.com/…' }.
+export const recordCollection = []

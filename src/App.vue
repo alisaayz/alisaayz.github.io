@@ -215,5 +215,5 @@ onUnmounted(() => {
   <button ref="corner" class="page-fold" type="button" aria-label="Open the study room" aria-haspopup="dialog" :aria-expanded="roomOpen" @click="roomOpen = true">
     <span class="fold-face" aria-hidden="true">↗</span><span class="fold-label">The study room</span>
   </button>
-  <StudyRoom v-if="roomOpen" @close="closeRoom" @projects="navigate('projects')" />
+  <StudyRoom v-if="roomOpen" @close="closeRoom" />
 </template>

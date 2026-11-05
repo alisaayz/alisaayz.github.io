@@ -20,7 +20,7 @@ npm run build
 ## Update the room
 
 - `src/study.js`: ten book slots, object hit areas, cat paths and cat landing positions. Coordinates are percentages of the square room artwork.
-- `src/components/StudyRoom.vue`: object close-ups and interactions. The monitor opens Projects. The turntable, golf bag and bookshelf can be inspected; music and mini golf are reserved for future updates.
-- `src/assets/study/`: room artwork, cat poses and the globe texture. The globe's land outlines are from [Natural Earth](https://www.naturalearthdata.com/), public domain.
+- `src/components/StudyRoom.vue`: object close-ups and interactions. The monitor shows the most recent public project README, with a bundled copy of the portfolio risk project when GitHub is unavailable. The turntable opens a music picker. Add public SoundCloud track or playlist URLs to `recordCollection` in `src/study.js`. Mini golf is reserved for a future update.
+- `src/assets/study/`: room artwork, front-facing props, cat poses and stride sheets, and the globe texture. The globe's land outlines are from [Natural Earth](https://www.naturalearthdata.com/), public domain.
 
 Pushes to `main` build and publish through `.github/workflows/deploy.yml` at [alisaayz.github.io](https://alisaayz.github.io/).
