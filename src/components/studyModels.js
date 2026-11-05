@@ -4,19 +4,19 @@ import {
   Scene, SphereGeometry, SRGBColorSpace, TextureLoader, TorusGeometry, TubeGeometry, Vector3,
 } from 'three'
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js'
-import globeMap from '../assets/study/world-relief.webp'
+import globeMap from '../assets/study/world-visited.webp'
 import { shelfBooks } from '../study.js'
 
 export const shelfAnchor = [358, 998]
-export const recordAnchor = [1285, 1954]
+export const recordAnchor = [1274, 2150]
 export const globeAnchor = [1760, 2013]
 
-function woodTexture() {
+function woodTexture(color = '#b5814d') {
   const canvas = document.createElement('canvas')
   canvas.width = 1024
   canvas.height = 128
   const ctx = canvas.getContext('2d')
-  ctx.fillStyle = '#b5814d'
+  ctx.fillStyle = color
   ctx.fillRect(0, 0, canvas.width, canvas.height)
   for (let y = 0; y < canvas.height; y++) {
     const shade = (1 + Math.sin(y * 4.631)) * .08
@@ -96,6 +96,24 @@ function turntable(grain) {
   return group
 }
 
+function listeningStation(grain, shadow) {
+  const group = new Group()
+  const tableGrain = woodTexture('#d5ab76')
+  const oak = new MeshStandardMaterial({ map:tableGrain, color:'#fff0dc', roughness:.75 })
+  const edge = new MeshStandardMaterial({ map:tableGrain, color:'#deb180', roughness:.8 })
+  cylinder(group, edge, 151, 162, 0, 81, 0)
+  cylinder(group, edge, 256, 20, 0, 170, 0)
+  cylinder(group, oak, 254, 5, 0, 181, 0)
+  const bevel = part(group, new TorusGeometry(252.5, 2.1, 8, 96), oak, 0, 182, 0)
+  bevel.rotation.x = Math.PI / 2
+  const contact = part(group, new PlaneGeometry(345, 245), shadow, 9, 183.6, -55)
+  contact.rotation.x = -Math.PI / 2
+  const player = turntable(grain)
+  player.position.set(9, 184, -55)
+  group.add(player)
+  return group
+}
+
 function globeModel(grain) {
   const group = new Group()
   const wood = new MeshStandardMaterial({ map: grain, color:'#b39176', roughness:.7 })
@@ -171,7 +189,7 @@ export function createStudyModels(requestDraw) {
   const oak = new MeshStandardMaterial({ map: grain, roughness: .82 })
   const shelves = [0, 1].map(row => {
     const group = new Group()
-    const plank = box(group, oak, 1, 1, 1, 0, 0, 0)
+    const plank = box(group, row ? oak.clone() : oak, 1, 1, 1, 0, 0, 0)
     const rowBooks = new Group()
     shelfBooks.slice(row*5, row*5+5).forEach((book,i) => {
       const cover = new MeshStandardMaterial({ color:book.color, roughness:.91 })
@@ -183,8 +201,8 @@ export function createStudyModels(requestDraw) {
     scene.add(group)
     return { group, plank, rowBooks }
   })
-  const record = turntable(grain)
   const shadow = shadowMaterial()
+  const record = listeningStation(grain, shadow)
   const recordShadow = part(shadows, new PlaneGeometry(1, 1), shadow, 0, 0, 0)
   const shelfShadow = part(shadows, new PlaneGeometry(1, 1), shadow, 0, 0, 0)
   const globeShadow = part(shadows, new PlaneGeometry(1, 1), shadow, 0, 0, 0)

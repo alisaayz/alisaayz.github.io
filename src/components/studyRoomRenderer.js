@@ -1,10 +1,31 @@
 import { CanvasTexture, MathUtils, Matrix4, Mesh, MeshBasicMaterial, OrthographicCamera, PerspectiveCamera, PlaneGeometry, Scene, SRGBColorSpace, WebGLRenderer } from 'three'
 import { createStudyModels, globeAnchor, recordAnchor, shelfAnchor } from './studyModels.js'
+import { closeupFloorPitch, leftWallEdge, roomFloorPitch } from '../studyFraming.js'
 
 const CAMERA_ARCS = {
   books: [-.19, -.065], golf: [-.16, -.095], monitor: [.18, -.045],
   photos: [.19, -.055], record: [-.09, -.15], globe: [.10, -.12],
   Ono: [-.08, -.13], Yuzu: [.08, -.13],
+}
+
+// Match the room-stage cubic-bezier(.22,.72,.22,1) for the attached props.
+function cameraEase(time) {
+  if (time >= 1) return 1
+  let low = 0, high = 1
+  for (let i = 0; i < 14; i++) {
+    const t = (low+high)/2
+    const x = .66*t*(1-t) + t*t*t
+    if (x < time) low = t
+    else high = t
+  }
+  const t = (low+high)/2
+  return 2.16*t*(1-t)**2 + 3*t*t*(1-t) + t*t*t
+}
+
+function fade(material, opacity) {
+  material.opacity = opacity
+  material.transparent = opacity < 1
+  material.depthWrite = opacity >= 1
 }
 
 // Keep the artwork under the live controls fixed as the rest of the room turns.
@@ -80,8 +101,8 @@ export function createRoomRenderer(canvas, stage, image, patches, onVisibility) 
   const translation = new Matrix4(), scaleMatrix = new Matrix4()
   let frame = 0, lost = false, disposed = false, subject, lastSubject, shelfLayout
   let width = 0, height = 0, dpr = 0, movingUntil = 0, focusStart = -Infinity
-  let yaw = 0, pitch = 0, shelfAmount = 0, recordAmount = 0
-  let startShelf = 0, startRecord = 0, arcYaw = 0, arcPitch = 0
+  let yaw = 0, pitch = 0, shelfAmount = 0, recordAmount = 0, floorAmount = 0
+  let startShelf = 0, startRecord = 0, startFloor = 0, arcYaw = 0, arcPitch = 0
   let globeAngle = 0, globeVisible = false
 
   function resize() {
@@ -143,11 +164,12 @@ export function createRoomRenderer(canvas, stage, image, patches, onVisibility) 
 
     const recordPoint = artPoint(...recordAnchor)
     const recordScale = pixelScale(...recordAnchor)
+    const floorPitch = MathUtils.lerp(roomFloorPitch, closeupFloorPitch, floorAmount)
     models.record.position.set(recordPoint.x, recordPoint.y, 0)
     models.record.scale.setScalar(recordScale)
-    models.record.rotation.set(.58*(1-recordAmount), -.42*(1-recordAmount), .10*(1-recordAmount), 'ZXY')
-    models.recordShadow.position.set(recordPoint.x, recordPoint.y - 6*recordScale, 0)
-    models.recordShadow.scale.set(350*recordScale, (120 - 72*recordAmount)*recordScale, 1)
+    models.record.rotation.set(floorPitch, -.42*(1-recordAmount), .08*(1-recordAmount), 'ZXY')
+    models.recordShadow.position.set(recordPoint.x + 8*recordScale, recordPoint.y - 8*recordScale, 0)
+    models.recordShadow.scale.set(405*recordScale, 405*Math.sin(floorPitch)*recordScale, 1)
 
     const globePoint = artPoint(...globeAnchor)
     const globeScale = pixelScale(...globeAnchor)
@@ -155,21 +177,30 @@ export function createRoomRenderer(canvas, stage, image, patches, onVisibility) 
     models.globe.group.visible = globeVisible
     models.globe.group.position.set(globePoint.x, globePoint.y, 0)
     models.globe.group.scale.setScalar(globeScale)
+    models.globe.group.rotation.x = floorPitch
     models.globe.earth.rotation.y = -globeAngle
     models.globeShadow.visible = globeVisible
     models.globeShadow.position.set(globePoint.x, globePoint.y, 0)
-    models.globeShadow.scale.set(124*globeScale, 33*globeScale, 1)
+    models.globeShadow.scale.set(124*globeScale, 124*Math.sin(floorPitch)*globeScale, 1)
 
     const shelfScale = pixelScale(...shelfAnchor)
     const shelfTop = shelfLayout?.surface ?? height * .71
     const extension = MathUtils.smoothstep(shelfAmount, .32, 1)
+    const [wallLeft, wallRight] = leftWallEdge.map(([x,y]) => artPoint(x,y))
+    const shelfAngle = Math.atan2(wallRight.y-wallLeft.y, wallRight.x-wallLeft.x)
+    const overviewOpacity = 1 - MathUtils.smoothstep(shelfAmount, .36, .83)
     models.shelves.forEach(({ group, plank, rowBooks }, row) => {
       const point = artPoint(322, 981 + row*194)
-      group.visible = row === 0 || shelfAmount < .8
-      rowBooks.visible = shelfAmount < .54
+      group.visible = row === 0 || overviewOpacity > 0
+      if (row) fade(plank.material, overviewOpacity)
+      rowBooks.visible = overviewOpacity > 0
+      if (rowBooks.visible) for (const book of rowBooks.children) for (const material of book.material) fade(material, overviewOpacity)
       const extend = row === 0 ? extension : 0
       group.position.set(MathUtils.lerp(point.x, 0, extend), MathUtils.lerp(point.y, height/2 - shelfTop, extend), -70)
-      group.rotation.set(.46*(1-extend), .75*(1-extend), .03*(1-extend), 'ZXY')
+      const shelfPitch = .46 * (1-shelfAmount)
+      const shelfYaw = .75 * (1-shelfAmount)
+      const naturalAngle = Math.atan2(Math.sin(shelfPitch)*Math.sin(shelfYaw), Math.cos(shelfYaw))
+      group.rotation.set(shelfPitch, shelfYaw, shelfAngle-naturalAngle, 'ZXY')
       group.scale.setScalar(shelfScale)
       const thickness = MathUtils.lerp(22, Math.max(14, (shelfLayout?.height ?? 280)*.059)/shelfScale, extend)
       plank.scale.set(MathUtils.lerp(362, (width+80)/shelfScale, extend), thickness, 102)
@@ -181,7 +212,7 @@ export function createRoomRenderer(canvas, stage, image, patches, onVisibility) 
     renderer.render(models.shadows, propCamera)
     renderer.clearDepth()
     renderer.render(models.scene, propCamera)
-    const bookOpacity = MathUtils.smoothstep(shelfAmount, .62, .97)
+    const bookOpacity = MathUtils.smoothstep(shelfAmount, .59, .98)
     models.drawBooks(shelfLayout, bookOpacity)
     if (shelfLayout && bookOpacity) {
       renderer.clearDepth()
@@ -192,12 +223,13 @@ export function createRoomRenderer(canvas, stage, image, patches, onVisibility) 
   function tick(now) {
     frame = 0
     const t = Math.min(1, (now - focusStart) / 660)
-    const mix = 1 - (1 - t) ** 3
+    const mix = cameraEase(t)
     const arc = t === 1 ? 0 : Math.sin(Math.PI * mix)
     yaw = arcYaw * arc
     pitch = arcPitch * arc
     shelfAmount = MathUtils.lerp(startShelf, subject === 'books' ? 1 : 0, mix)
     recordAmount = MathUtils.lerp(startRecord, subject === 'record' ? 1 : 0, mix)
+    floorAmount = MathUtils.lerp(startFloor, subject === 'record' || subject === 'globe' ? 1 : 0, mix)
     draw()
     if (now < movingUntil || t < 1) invalidate()
   }
@@ -216,6 +248,7 @@ export function createRoomRenderer(canvas, stage, image, patches, onVisibility) 
     subject = id
     startShelf = shelfAmount
     startRecord = recordAmount
+    startFloor = floorAmount
     focusStart = immediate ? -Infinity : performance.now()
     if (immediate && !lost) { cancelAnimationFrame(frame); tick(performance.now()) }
     else invalidate()

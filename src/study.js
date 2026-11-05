@@ -1,7 +1,7 @@
 // Coordinates are percentages of the square room artwork, independent of camera zoom.
 export const propsInRoom = [
   { id: 'books', label: 'Bookshelf', x: 13, y: 41, w: 14, h: 18 },
-  { id: 'photos', label: 'Photo wall', x: 68.5, y: 28.5, w: 26, h: 27, shape: '0 0,100% 42%,100% 100%,0 59%' },
+  { id: 'photos', label: 'Photo wall', x: 68.4, y: 27.5, w: 26, h: 28.7, shape: '0 0,100% 46%,100% 100%,0 54%' },
   { id: 'flags', label: 'Pennants', x: 88.5, y: 35.5, w: 10.5, h: 14 },
   { id: 'monitor', label: 'Computer' },
   { id: 'desk', label: 'Desk', x: 70, y: 50.1, w: 18, h: 8, shape: '10% 0,100% 63%,90% 100%,0 43%' },
@@ -12,6 +12,11 @@ export const propsInRoom = [
   { id: 'globe', label: 'Globe', x: 70.2, y: 77.5, w: 9, h: 13.4 },
 ]
 export const roomCloseups = propsInRoom.filter(item => ['books','photos','monitor','golf','record','globe'].includes(item.id))
+export const visitedPlaces = [
+  'Canada', 'China', 'United States', 'Italy', 'Germany', 'Switzerland',
+  'United Arab Emirates', 'Japan', 'Singapore', 'Malaysia', 'Mexico', 'Puerto Rico',
+  'The Bahamas', 'Cuba', 'France', 'Hawaii', 'Madagascar', 'Maldives', 'Monaco', 'Spain',
+]
 export const catProfiles = [
   {
     chineseName: '椰子',

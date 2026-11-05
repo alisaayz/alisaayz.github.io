@@ -1,5 +1,5 @@
-import roomArt from './assets/study/room-monitor-ready.webp'
-import roomObjectPlates from './assets/study/room-object-clean-plates.webp'
+import roomArt from './assets/study/room-wall-ready.webp'
+import roomObjectPlates from './assets/study/room-floor-clean-plates.webp'
 export { roomArt }
 const warmed = new Map()
 

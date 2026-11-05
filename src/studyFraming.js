@@ -3,6 +3,16 @@ const monitorWidth = 425
 const monitorHeight = monitorWidth * 9 / 16
 const monitorLeft = 1490, monitorRight = monitorLeft + monitorWidth
 const monitorBottomLeft = 1052, monitorBottomRight = 1228
+export const roomFloorPitch = 28.5 * Math.PI / 180
+export const closeupFloorPitch = Math.PI / 6
+export const leftWallEdge = [[123, 726], [1254, 153]]
+const rightWallEdge = [[1254, 153], [2379, 724]]
+
+function wallFace(edge, left, top, width, height) {
+  const [[x1, y1], [x2, y2]] = edge
+  const rise = width * (y2 - y1) / (x2 - x1)
+  return [[left, top], [left + width, top + rise], [left + width, top + rise + height], [left, top + height]]
+}
 
 export const monitorFrame = {
   x: (monitorLeft + monitorRight) / 2 / artworkSize * 100,
@@ -18,9 +28,8 @@ const faces = {
     [monitorRight, monitorBottomRight],
     [monitorLeft, monitorBottomLeft],
   ],
-  photos: [[1389, 372], [2047, 660], [2047, 1064], [1388, 785]],
-  books: [[226, 1058], [490, 938], [490, 959], [226, 1079]],
-  record: [[1119, 1956], [1364, 1991], [1364, 2033], [1119, 1998]],
+  photos: wallFace(rightWallEdge, 1390, 330, 650, 388),
+  books: wallFace(leftWallEdge, 226, 1058, 264, 21),
   golf: [[260, 1397], [386, 1397], [390, 1774], [264, 1774]],
 }
 
@@ -45,6 +54,9 @@ function artworkPlane(corners, size) {
 }
 
 export function frontFacingMatrix(id, size) {
+  if (id === 'record' || id === 'globe') {
+    return new DOMMatrix().scale(1, Math.sin(closeupFloorPitch) / Math.sin(roomFloorPitch))
+  }
   if (!faces[id]) return new DOMMatrix()
   const { toArtwork, width, height } = artworkPlane(faces[id], size)
   // Keep coordinates relative to the stage's center, its CSS transform origin.

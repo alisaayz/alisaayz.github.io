@@ -1,6 +1,7 @@
 <script setup>
 import { onMounted, onUnmounted, ref, useId } from 'vue'
-import mapUrl from '../assets/study/world-relief.webp'
+import mapUrl from '../assets/study/world-visited.webp'
+import { visitedPlaces } from '../study.js'
 
 const props = defineProps({ interactive: Boolean, embedded: Boolean, webgl: Boolean })
 const emit = defineEmits(['rotate'])
@@ -8,6 +9,7 @@ const globe = ref(null)
 const size = 256
 const metal = useId(), wood = useId(), shade = useId()
 let frame, drag, paint, angle = 0, timestamp = 0
+let textureWidth = 1600
 const motion = window.matchMedia('(prefers-reduced-motion: reduce)')
 let alive = true
 onMounted(() => {
@@ -15,6 +17,7 @@ onMounted(() => {
   map.onload = () => {
     if (!alive) return
     const texture = document.createElement('canvas')
+    textureWidth = map.width
     angle = (props.embedded ? -.08 : .15) * map.width
     texture.width = map.width
     texture.height = map.height
@@ -79,12 +82,12 @@ function start(event) {
 }
 function move(event) {
   if (drag?.id !== event.pointerId) return
-  angle -= (event.clientX - drag.x) * 2
+  angle -= (event.clientX - drag.x) * textureWidth / 800
   drag.x = event.clientX
   paint?.()
 }
 function end(event) { if (drag?.id === event.pointerId) drag = null }
-function spin(direction) { angle += direction * 23; paint?.() }
+function spin(direction) { angle += direction * 23 * textureWidth / 1600; paint?.() }
 </script>
 
 <template>
@@ -103,6 +106,7 @@ function spin(direction) { angle += direction * 23; paint?.() }
     </svg>
     <canvas ref="globe" :width="size" :height="size" :class="{ 'globe-webgl-hit':webgl }"
       :aria-label="interactive ? 'Globe. Use left and right arrow keys to turn it.' : undefined"
+      :aria-description="interactive ? `Highlighted places: ${visitedPlaces.join(', ')}.` : undefined"
       :aria-hidden="interactive ? undefined : 'true'" :tabindex="interactive ? 0 : undefined"
       @pointerdown="start" @pointermove="move" @pointerup="end" @pointercancel="end" @lostpointercapture="end"
       @keydown.left.prevent="spin(-1)" @keydown.right.prevent="spin(1)" />

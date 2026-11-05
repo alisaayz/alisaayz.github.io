@@ -13,7 +13,7 @@ function show(text) {
   const letters = Array.from(text)
   const plans = letters.map((char, index) => ({
     char, start: index * stagger,
-    steps: char === ' ' ? [] : [glyphs[(index*7+5)%36], glyphs[(index*11+17)%36], glyphs[(index*13+26)%36], char],
+    steps: [glyphs[(index*7+5)%36], glyphs[(index*11+17)%36], glyphs[(index*13+26)%36], char],
   }))
   if (motion.matches) {
     tiles.value = letters.map(char => ({ current:char, next:char, step:-1, flipping:false }))
@@ -24,7 +24,6 @@ function show(text) {
   function tick(now) {
     let pending = false
     plans.forEach((plan, index) => {
-      if (!plan.steps.length) return
       const step = Math.floor((now-start-plan.start)/flipMs)
       const tile = tiles.value[index]
       if (step < plan.steps.length) pending = true
@@ -49,7 +48,7 @@ onUnmounted(() => { cancelAnimationFrame(frame); motion.removeEventListener('cha
   <span class="greeting-board">
     <span class="greeting-accessible">{{ text }}</span>
     <span class="greeting-tiles" aria-hidden="true" :style="{ '--flap-time':flipMs+'ms' }">
-      <span v-for="(tile,i) in tiles" :key="i" class="greeting-tile" :class="{ 'greeting-space': text[i] === ' ' }">
+      <span v-for="(tile,i) in tiles" :key="i" class="greeting-tile">
         <span class="greeting-half top"><span>{{ tile.next }}</span></span>
         <span class="greeting-half bottom"><span>{{ tile.current }}</span></span>
         <template v-if="tile.flipping">
@@ -64,9 +63,8 @@ onUnmounted(() => { cancelAnimationFrame(frame); motion.removeEventListener('cha
 <style scoped>
 .greeting-board { position:relative; display:block; width:100%; container-type:inline-size }
 .greeting-accessible { position:absolute; width:1px; height:1px; overflow:hidden; clip-path:inset(50%); white-space:nowrap }
-.greeting-tiles { display:flex; gap:.035em; align-items:center; min-height:1.14em; font-size:min(1em,10.4cqw); letter-spacing:normal; line-height:1; }
+.greeting-tiles { display:flex; gap:.035em; align-items:center; min-height:1.14em; font-size:min(1em,10cqw); letter-spacing:normal; line-height:1; }
 .greeting-tile { position:relative; display:block; flex:0 0 .72em; height:1.14em; border-radius:.09em; overflow:hidden; perspective:9em; color:var(--ink); background:var(--soft); box-shadow:0 1px 0 var(--line) }
-.greeting-space { flex-basis:.34em; visibility:hidden }
 .greeting-tile::after { content:''; position:absolute; z-index:4; inset:50% 0 auto; height:1px; background:color-mix(in srgb,var(--ink) 23%,transparent); pointer-events:none }
 .greeting-half { position:absolute; inset-inline:0; height:50%; overflow:hidden; backface-visibility:hidden; }
 .greeting-half.top { top:0; background:color-mix(in srgb,var(--paper) 22%,var(--soft)); }
