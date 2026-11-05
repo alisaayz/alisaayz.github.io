@@ -1,11 +1,12 @@
 <script setup>
-import { computed, nextTick, onMounted, onUnmounted, reactive, ref } from 'vue'
+import { computed, nextTick, onMounted, onUnmounted, reactive, ref, watch } from 'vue'
 import { galleryPhotos, wildCollage } from '../gallery.js'
-import { catActivities, catRoutes, dropTarget, nearestStop, roomCloseups } from '../study.js'
+import { catActivities, catRoutes, dropTarget, nearestStop, roomCloseups, shelfBooks } from '../study.js'
 import StudyGlobe from './StudyGlobe.vue'
 import StudyCloseup from './StudyCloseup.vue'
+import StudyMonitor from './StudyMonitor.vue'
 import StudyPennants from './StudyPennants.vue'
-import { preloadRoomViews, roomArt } from '../studyAssets.js'
+import { roomArt } from '../studyAssets.js'
 import './study-room.css'
 
 const emit = defineEmits(['close'])
@@ -16,13 +17,29 @@ const dialog = ref(null), stage = ref(null), closeButton = ref(null), closeup = 
 const selected = ref(null)
 const returning = ref(false)
 const artReady = ref(false)
+const webglReady = ref(false)
+const artCanvas = ref(null)
+let artRenderer, startingRenderer = false, roomDisposed = false
 const entryKey = 'portfolio-study-entered'
 const introOpen = ref(true)
 const entryButton = ref(null)
 try { introOpen.value = localStorage.getItem(entryKey) !== 'yes' } catch { /* The room still works without storage. */ }
-function roomLoaded() {
+async function roomLoaded({ currentTarget: image }) {
   artReady.value = true
-  if (!navigator.connection?.saveData) preloadRoomViews()
+  if (startingRenderer) return
+  startingRenderer = true
+  try {
+    const { createRoomRenderer } = await import('./studyRoomRenderer.js')
+    if (roomDisposed || !artCanvas.value) return
+    artRenderer = createRoomRenderer(artCanvas.value, image, visible => { webglReady.value = visible })
+    if (!artRenderer) return
+    artRenderer.focus(selected.value?.id, true)
+    webglReady.value = true
+  } catch {
+    // The same art and room controls remain usable without WebGL.
+    artRenderer?.dispose()
+    artRenderer = undefined
+  }
 }
 function enterRoom() {
   introOpen.value = false
@@ -30,7 +47,9 @@ function enterRoom() {
   nextTick(() => closeButton.value?.focus({ preventScroll:true }))
 }
 const motion = window.matchMedia('(prefers-reduced-motion: reduce)')
-const camera = reactive({ x: 0, y: 0, scale: 1 })
+watch(selected, object => artRenderer?.focus(object?.id, motion.matches))
+const camera = reactive({ x: 0, y: 0, scale: 1, shear: 0 })
+let shelfHeight = 0, resizeRoom
 const instantCamera = ref(false)
 const zoomPercent = computed(() => Math.round(camera.scale * 100))
 const draggingCat = ref(null)
@@ -43,10 +62,10 @@ const cats = reactive(['Ono','Yuzu'].map((name, i) => ({
 let pan, catDrag, timer, previousOverflow, returnTarget, previousCamera
 const stepTimers = []
 const clamp = (v, low, high) => Math.min(high, Math.max(low, v))
-const sceneTransform = computed(() => `translate(-50%, -50%) translate(${camera.x}%, ${camera.y}%) scale(${camera.scale})`)
+const sceneTransform = computed(() => `translate(-50%, -50%) translate(${camera.x}%, ${camera.y}%) scale(${camera.scale}) skewY(${Math.atan(camera.shear)}rad)`)
 function resetCamera() {
   instantCamera.value = false
-  Object.assign(camera, { x: 0, y: 0, scale: 1 })
+  Object.assign(camera, { x: 0, y: 0, scale: 1, shear: 0 })
 }
 function zoom(next, event) {
   const scale = clamp(next, .75, 3.4)
@@ -60,9 +79,9 @@ function zoom(next, event) {
   }
   camera.scale = scale
 }
-function wheel(event) { if (!event.ctrlKey && !catDrag) zoom(camera.scale * Math.exp(-Math.sign(event.deltaY)*Math.min(Math.abs(event.deltaY),160)*.0025), event) }
+function wheel(event) { if (!selected.value && !event.ctrlKey && !catDrag) zoom(camera.scale * Math.exp(-Math.sign(event.deltaY)*Math.min(Math.abs(event.deltaY),160)*.0025), event) }
 function startPan(event) {
-  if (event.button !== 0 || event.target.closest('button') || catDrag || !stage.value) return
+  if (selected.value || event.button !== 0 || event.target.closest('button') || catDrag || !stage.value) return
   pan = { id: event.pointerId, x: event.clientX, y: event.clientY }
   instantCamera.value = true
   event.currentTarget.setPointerCapture(event.pointerId)
@@ -112,7 +131,7 @@ function placeCat(i, id) {
   else status.value = `${cat.name} is eating.`
 }
 function startCat(event, i) {
-  if (event.button !== 0 || pan || catDrag) return
+  if (selected.value || event.button !== 0 || pan || catDrag) return
   const box = event.currentTarget.getBoundingClientRect()
   const [x,y] = worldPoint(box.left+box.width/2, box.top+box.height*.84)
   const [pointerX,pointerY] = worldPoint(event.clientX,event.clientY)
@@ -135,20 +154,64 @@ function endCat(event, cancel = false) {
   if (moved) placeCat(i, cancel ? cats[i].activity : dropTarget(...worldPoint(event.clientX,event.clientY)))
   else if (!cancel) inspect({ id: cats[i].name, label: cats[i].name, x: cats[i].x, y: cats[i].y-4, cat: i }, event.currentTarget)
 }
+function clickCat(event,i) {
+  if (selected.value?.cat === i) {
+    if (!motion.matches) event.currentTarget.animate([
+      { translate:'0 0', scale:1 }, { translate:'0 -12%', scale:1.08 }, { translate:'0 0', scale:1 },
+    ],{ duration:440,easing:'ease-out' })
+  } else if (!selected.value && event.detail === 0) {
+    inspect({ id:cats[i].name, label:cats[i].name, x:cats[i].x, y:cats[i].y-4, cat:i },event.currentTarget)
+  }
+}
 function inspect(object, trigger) {
   if (returning.value) return
   returnTarget = trigger
   previousCamera = { ...camera }
   selected.value = object
   instantCamera.value = false
-  const scale = Math.max(camera.scale, ({ monitor: 4.15, books: 3.8, photos: 3.1, record: 3.75, golf: 3.7, globe: 3.5 })[object.id] || 3.1)
-  Object.assign(camera, { x: (50-object.x)*scale, y: (50-object.y)*scale, scale })
+  frameObject()
+}
+// Reframe the existing stage around the object's anchor. Wall-mounted objects
+// are straightened in the same coordinate space as their live controls.
+function frameObject() {
+  const object = selected.value
+  if (!object || !stage.value) return
+  const node = stage.value
+  const { clientWidth:w, clientHeight:h } = node.parentElement
+  const size = node.offsetWidth || 1
+  const settings = {
+    books: { x:12.75, y:39.8, shear:.455, spread:.14, fraction:w<=650?.91:.57 },
+    monitor: { x:67.8, y:41.42, shear:-.41, spread:.206, fraction:.83 },
+    photos: { x:68.8, y:28.8, shear:-.4348, spread:.26, fraction:.73 },
+    record: { x:51.1, y:77.4, shear:-.07, spread:.155, fraction:.43, cx:w>650?.39:.50, cy:w>650?.52:.44 },
+    golf: { x:12.4, y:61, shear:.13, spread:.15, fraction:.37 },
+    globe: { x:70.2, y:77.1, shear:0, spread:.09, fraction:.32 },
+  }[object.id] || { x:object.x, y:object.y, shear:0, spread:.12, fraction:.34, cy:w>650?.50:.42, cx:w>650?.39:.5 }
+  const { x,y,shear,spread,fraction,cx=.5,cy=.52 } = settings
+  const scale = Math.min(8.2, Math.min(w*fraction,h*({ books:1.06, monitor:1.5 }[object.id] || .82))/(size*spread))
+  const bookHeight = shelfHeight || Math.max(145,Math.min(h*.52,w*.79,380))
+  const targetY = object.id==='books' ? h/2+bookHeight/2 : h*cy
+  Object.assign(camera, {
+    x:(w*cx-node.offsetLeft)*100/size-(x-50)*scale,
+    y:(targetY-node.offsetTop)*100/size-((y-50)+shear*(x-50))*scale,
+    scale,shear,
+  })
+}
+function measureShelf(value) {
+  shelfHeight=value
+  if (selected.value?.id==='books') frameObject()
+}
+function previewPhoto(index) { if (selected.value?.id==='photos') closeup.value?.openPhoto(index) }
+function resetRoomObserver() {
+  resizeRoom = new ResizeObserver(() => frameObject())
+  resizeRoom.observe(stage.value.parentElement)
+
 }
 function leaveDetail() {
   returning.value = true
   selected.value = null
   instantCamera.value = false
-  Object.assign(camera, previousCamera || { x: 0, y: 0, scale: 1 })
+  Object.assign(camera, previousCamera || { x: 0, y: 0, scale: 1, shear: 0 })
 }
 function finishReturn() {
   returning.value = false
@@ -166,12 +229,16 @@ onMounted(() => {
   previousOverflow = document.body.style.overflow
   document.body.style.overflow = 'hidden'
   dialog.value.showModal()
+  resetRoomObserver()
   const initialFocus = introOpen.value ? entryButton.value : closeButton.value
   initialFocus?.focus()
   timer = setInterval(() => { walk(0); walk(1) }, 4600)
 })
 onUnmounted(() => {
+  roomDisposed = true
+  artRenderer?.dispose()
   clearInterval(timer)
+  resizeRoom?.disconnect()
   stepTimers.forEach(clearTimeout)
   document.body.style.overflow = previousOverflow
 })
@@ -184,23 +251,30 @@ onUnmounted(() => {
       <button v-if="!selected && !returning" ref="closeButton" class="room-close" type="button" @click="emit('close')" aria-label="Close study room">×</button>
     </header>
 
-    <div class="room-viewport" :inert="Boolean(selected) || returning || introOpen" :class="{ 'is-panning': instantCamera }" @wheel.prevent="wheel"
+    <div class="room-viewport" :inert="returning || introOpen" :class="{ 'is-panning': instantCamera }" @wheel="event => { if (!selected && !event.ctrlKey) { event.preventDefault(); wheel(event) } }"
       @pointerdown="startPan" @pointermove="movePan" @pointerup="stopPan" @pointercancel="stopPan" @lostpointercapture="stopPan">
-      <div ref="stage" class="room-stage" :class="{ 'camera-instant': instantCamera, 'art-ready': artReady }" :style="{ transform: sceneTransform }">
+      <div ref="stage" class="room-stage" :class="{ 'camera-instant': instantCamera, 'art-ready': artReady, 'art-webgl': webglReady }" :style="{ transform: sceneTransform }">
         <img class="room-art" :src="roomArt" alt="Isometric study with bamboo outside glass doors, a white desk, books, and a yellow beanbag" draggable="false" @load="roomLoaded" />
+        <canvas ref="artCanvas" class="room-art room-art-canvas" aria-hidden="true"></canvas>
+        <div v-if="selected?.id !== 'books'" class="overview-books" aria-hidden="true">
+          <div v-for="row in 2" :key="row" class="overview-book-row" :class="'book-row-'+row">
+            <span v-for="(book,i) in shelfBooks.slice((row-1)*5,row*5)" :key="i" :style="{ '--book-color':book.color }"></span>
+          </div>
+        </div>
 
-        <div class="cork-pins" aria-hidden="true">
-          <div v-for="(photo, index) in galleryPhotos" :key="photo.caption" class="cork-print" :style="pinStyle(index)">
+        <div class="cork-pins" :class="{ 'cork-active':selected?.id === 'photos' }" :inert="selected?.id !== 'photos'">
+          <button v-for="(photo, index) in galleryPhotos" :key="photo.caption" type="button" :aria-label="photo.caption" class="cork-print" :style="pinStyle(index)" @click="previewPhoto(index)">
             <div class="gallery-image">
               <img v-if="photo.tile !== null" :src="wildCollage" alt="" :class="`gallery-tile gallery-tile-${photo.tile}`" draggable="false" />
               <img v-else :src="photo.src" alt="" class="gallery-event" :style="{ objectPosition: photo.position }" draggable="false" />
             </div>
-          </div>
+          </button>
         </div>
         <StudyPennants />
-        <div class="room-globe-prop" aria-hidden="true"><StudyGlobe /></div>
+        <div class="room-globe-prop" :class="{ 'globe-active':selected?.id==='globe' }"><StudyGlobe :interactive="selected?.id==='globe'" /></div>
+        <div v-if="selected?.id==='monitor'" class="room-live-monitor" :style="{ '--screen-scale':camera.scale }"><StudyMonitor /></div>
 
-        <button v-for="object in roomCloseups" :key="object.id" type="button" class="room-hotspot"
+        <button v-for="object in roomCloseups" v-show="!selected" :key="object.id" type="button" class="room-hotspot"
           :aria-label="object.label"
           :style="{ left: object.x+'%', top: object.y+'%', width: object.w+'%', height: object.h+'%', '--shape': object.shape ? `polygon(${object.shape})` : 'inset(0 round 14%)' }"
           @click="inspect(object, $event.currentTarget)">
@@ -208,13 +282,13 @@ onUnmounted(() => {
           <span class="room-tag" aria-hidden="true">{{ object.label }}</span>
         </button>
 
-        <button v-for="(cat,i) in cats" :key="cat.name" class="room-cat" type="button" :aria-label="cat.name"
-          :class="[cat.pose, { 'cat-held': draggingCat === i, 'cat-mouse': i === 1 && cat.activity === 'desk', 'cat-keyboard': i === 0 && cat.activity === 'desk', 'cat-walking': cat.walking }]"
+        <button v-for="(cat,i) in cats" :key="cat.name" class="room-cat" type="button" :aria-label="selected?.cat === i ? 'Play with '+cat.name : cat.name" :inert="!!selected && selected.cat !== i"
+          :class="[cat.pose, { 'cat-held': draggingCat === i, 'cat-inspected':selected?.cat === i, 'cat-mouse': i === 1 && cat.activity === 'desk', 'cat-keyboard': i === 0 && cat.activity === 'desk', 'cat-walking': cat.walking }]"
           :style="{ left: cat.x+'%', top: cat.y+'%', '--facing': cat.facing, '--travel': cat.duration+'ms' }"
           @pointerenter="hoveredCat = i" @pointerleave="hoveredCat = null"
           @pointerdown.stop="startCat($event,i)" @pointermove.stop="moveCat"
           @pointerup.stop="endCat" @pointercancel="endCat($event,true)" @lostpointercapture="endCat($event,true)"
-          @click.stop="event => { if (event.detail === 0) inspect({ id: cat.name, label: cat.name, x: cat.x, y: cat.y-4, cat: i }, event.currentTarget) }">
+          @click.stop="clickCat($event,i)">
           <span v-if="cat.pose === 'walk'" class="cat-stride" aria-hidden="true" :style="{ backgroundImage: `url(${stride(cat)})` }"></span>
           <img v-else :src="sprite(cat)" alt="" draggable="false" />
           <span class="room-tag" aria-hidden="true">{{ cat.name }}</span>
@@ -234,7 +308,7 @@ onUnmounted(() => {
 
     <Transition name="room-angle" @after-leave="finishReturn">
       <StudyCloseup v-if="selected" ref="closeup" :object="selected"
-        :cat-art="selected.cat != null ? sprites[`../assets/study/${cats[selected.cat].name.toLowerCase()}-portrait.webp`] || sprite(cats[selected.cat]) : undefined"
+        @measure-shelf="measureShelf"
         @back="leaveDetail" />
     </Transition>
     <div v-if="introOpen" class="room-intro">

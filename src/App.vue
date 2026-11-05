@@ -1,6 +1,7 @@
 <script setup>
 import { computed, defineAsyncComponent, nextTick, onMounted, onUnmounted, ref } from 'vue'
 import Icon from './components/Icon.vue'
+import SplitFlapGreeting from './components/SplitFlapGreeting.vue'
 import { galleryPhotos, wildCollage } from './gallery.js'
 import { profile } from './portfolio.js'
 import { resume } from './resume.js'
@@ -65,7 +66,7 @@ function syncTheme() {
   isDark.value = themePreference.value === 'system' ? systemTheme.matches : themePreference.value === 'dark'
   const theme = isDark.value ? 'dark' : 'light'
   document.documentElement.dataset.theme = theme
-  document.querySelector('meta[name="theme-color"]')?.setAttribute('content', isDark.value ? '#202a34' : '#ffffff')
+  document.querySelector('meta[name="theme-color"]')?.setAttribute('content', isDark.value ? '#202a34' : '#f8fafb')
 }
 function chooseTheme(preference) {
   themePreference.value = preference
@@ -132,7 +133,7 @@ onUnmounted(() => {
       <section v-if="activePage === 'about'" class="about-page" aria-label="About Me">
         <div class="hero-copy">
           <p class="eyebrow">01 <span>/</span> About Me</p>
-          <h2>Hi, I'm Alisa</h2>
+          <h2><SplitFlapGreeting text="Hi, I'm Alisa" /></h2>
 
         </div>
         <div class="hero-visual">

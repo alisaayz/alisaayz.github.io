@@ -4,7 +4,7 @@ import mapUrl from '../assets/study/world-relief.webp'
 
 const props = defineProps({ interactive: Boolean, embedded: Boolean })
 const globe = ref(null)
-const size = props.interactive ? 368 : 132
+const size = 256
 const metal = useId(), wood = useId(), shade = useId()
 let frame, drag, paint, angle = 0, timestamp = 0
 const motion = window.matchMedia('(prefers-reduced-motion: reduce)')
