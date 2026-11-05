@@ -5,7 +5,7 @@ import { catProfiles, recordCollection } from '../study.js'
 import StudyBookshelf from './StudyBookshelf.vue'
 
 const props = defineProps({ object: Object, webgl: Boolean })
-const emit = defineEmits(['back','measure-shelf','draw-shelf'])
+const emit = defineEmits(['back','draw-shelf'])
 const back = ref(null), photoIndex = ref(null), trackIndex = ref(null)
 const currentPhoto = computed(() => galleryPhotos[photoIndex.value])
 const currentTrack = computed(() => recordCollection[trackIndex.value])
@@ -36,7 +36,7 @@ defineExpose({ goBack,openPhoto })
 <template>
   <section class="room-inspection" :aria-label="object.label">
     <button ref="back" class="item-return" type="button" @click="goBack">← {{ currentPhoto ? 'Photo wall' : 'Room' }}</button>
-    <StudyBookshelf v-if="object.id==='books'" :webgl="webgl" @measure="emit('measure-shelf',$event)" @draw="emit('draw-shelf',$event)" />
+    <StudyBookshelf v-if="object.id==='books'" :webgl="webgl" @draw="emit('draw-shelf',$event)" />
     <div v-if="currentPhoto" class="print-focus" @keydown.left.prevent="changePhoto(-1)" @keydown.right.prevent="changePhoto(1)">
       <button type="button" class="print-arrow" aria-label="Previous photo" @click="changePhoto(-1)">←</button>
       <figure><div class="gallery-image"><img v-if="currentPhoto.tile !== null" :src="wildCollage" :alt="currentPhoto.alt" :class="`gallery-tile gallery-tile-${currentPhoto.tile}`" /><img v-else :src="currentPhoto.src" :alt="currentPhoto.alt" class="gallery-event" :style="{ objectPosition: currentPhoto.position }" /></div><figcaption>{{ currentPhoto.caption }}</figcaption></figure>

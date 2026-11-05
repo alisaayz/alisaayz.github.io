@@ -16,6 +16,7 @@ export const visitedPlaces = [
   'Canada', 'China', 'United States', 'Italy', 'Germany', 'Switzerland',
   'United Arab Emirates', 'Japan', 'Singapore', 'Malaysia', 'Mexico', 'Puerto Rico',
   'The Bahamas', 'Cuba', 'France', 'Hawaii', 'Madagascar', 'Maldives', 'Monaco', 'Spain',
+  'Philippines',
 ]
 export const catProfiles = [
   {

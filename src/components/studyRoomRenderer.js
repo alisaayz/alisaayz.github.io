@@ -184,36 +184,35 @@ export function createRoomRenderer(canvas, stage, image, patches, onVisibility) 
     models.globeShadow.scale.set(124*globeScale, 124*Math.sin(floorPitch)*globeScale, 1)
 
     const shelfScale = pixelScale(...shelfAnchor)
-    const shelfTop = shelfLayout?.surface ?? height * .71
-    const extension = MathUtils.smoothstep(shelfAmount, .32, 1)
+    const extension = shelfLayout ? MathUtils.smoothstep(shelfAmount, .32, 1) : 0
     const [wallLeft, wallRight] = leftWallEdge.map(([x,y]) => artPoint(x,y))
     const shelfAngle = Math.atan2(wallRight.y-wallLeft.y, wallRight.x-wallLeft.x)
     const overviewOpacity = 1 - MathUtils.smoothstep(shelfAmount, .36, .83)
     models.shelves.forEach(({ group, plank, rowBooks }, row) => {
       const point = artPoint(322, 981 + row*194)
-      group.visible = row === 0 || overviewOpacity > 0
-      if (row) fade(plank.material, overviewOpacity)
+      const surface = shelfLayout?.rows[row].surface ?? height*.5
       rowBooks.visible = overviewOpacity > 0
       if (rowBooks.visible) for (const book of rowBooks.children) for (const material of book.material) fade(material, overviewOpacity)
-      const extend = row === 0 ? extension : 0
-      group.position.set(MathUtils.lerp(point.x, 0, extend), MathUtils.lerp(point.y, height/2 - shelfTop, extend), -70)
+      group.position.set(MathUtils.lerp(point.x, 0, extension), MathUtils.lerp(point.y, height/2 - surface, extension), -70)
       const shelfPitch = .46 * (1-shelfAmount)
       const shelfYaw = .75 * (1-shelfAmount)
       const naturalAngle = Math.atan2(Math.sin(shelfPitch)*Math.sin(shelfYaw), Math.cos(shelfYaw))
       group.rotation.set(shelfPitch, shelfYaw, shelfAngle-naturalAngle, 'ZXY')
       group.scale.setScalar(shelfScale)
-      const thickness = MathUtils.lerp(22, Math.max(14, (shelfLayout?.height ?? 280)*.059)/shelfScale, extend)
-      plank.scale.set(MathUtils.lerp(362, (width+80)/shelfScale, extend), thickness, 102)
+      const thickness = MathUtils.lerp(22, Math.max(10, (shelfLayout?.height ?? 220)*.066)/shelfScale, extension)
+      const plankWidth = shelfLayout?.width ?? 362*shelfScale
+      plank.scale.set(MathUtils.lerp(362, plankWidth/shelfScale, extension), thickness, 102)
       plank.position.y = -thickness/2
+      const shadow = models.shelfShadows[row]
+      shadow.visible = extension > .6
+      shadow.position.set(group.position.x, group.position.y-16, 0)
+      shadow.scale.set(plankWidth*1.22, 38, 1)
     })
-    models.shelfShadow.visible = extension > .6
-    models.shelfShadow.position.set(0, height/2-shelfTop-22, 0)
-    models.shelfShadow.scale.set(width*2.1, 44, 1)
     renderer.render(models.shadows, propCamera)
     renderer.clearDepth()
     renderer.render(models.scene, propCamera)
     const bookOpacity = MathUtils.smoothstep(shelfAmount, .59, .98)
-    models.drawBooks(shelfLayout, bookOpacity)
+    models.drawBooks(shelfLayout, bookOpacity, height)
     if (shelfLayout && bookOpacity) {
       renderer.clearDepth()
       renderer.render(models.booksScene, bookCamera)

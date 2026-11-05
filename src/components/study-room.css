@@ -303,7 +303,7 @@
 .room-angle-enter-active,.room-angle-leave-active { transition:opacity .22s ease; }
 .room-angle-enter-from,.room-angle-leave-to { opacity:0; }
 .room-angle-leave-active { pointer-events:none; }
-.room-angle-leave-active .book-shelf-strip,.room-angle-leave-active .shelf-navigation { pointer-events:none; }
+.room-angle-leave-active .book-shelf-strip .book-control { pointer-events:none; }
 .room-inspection .item-return { z-index:9; top:clamp(16px,5dvh,42px); background:#fbf6eb; }
 .room-dialog:has(.room-inspection) .room-title { visibility:hidden; }
 .room-viewport:has(.globe-active),.room-viewport:has(.room-live-monitor) { cursor:default; }

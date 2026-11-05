@@ -58,7 +58,7 @@ const camera = reactive({ x: 0, y: 0, scale: 1, projection: neutralProjection })
 const stageSize = ref(0)
 const corkStyle = computed(() => roomFaceStyle('photos', stageSize.value))
 const monitorStyle = computed(() => ({ ...roomFaceStyle('monitor', stageSize.value), '--screen-scale': camera.scale }))
-let shelfHeight = 0, resizeRoom
+let resizeRoom
 const instantCamera = ref(false)
 const zoomPercent = computed(() => Math.round(camera.scale * 100))
 const draggingCat = ref(null)
@@ -190,7 +190,7 @@ function frameObject() {
   const { clientWidth:w, clientHeight:h } = node.parentElement
   const size = node.offsetWidth || 1
   const settings = {
-    books: { x:12.75, y:39.8, spread:.14, fraction:w<=650?.91:.57 },
+    books: { x:11.8, y:41.3, spread:.14, fraction:w<=650?.95:.70, cy:.5 },
     monitor: { ...monitorFrame, fraction:.83, cy:.5 },
     photos: { x:68.4, y:27.5, spread:.26, fraction:.73 },
     record: { x:50.8, y:79.4, spread:.155, fraction:w>650?.43:.59, cx:w>650?.39:.50, cy:w>650?.50:.44 },
@@ -200,20 +200,14 @@ function frameObject() {
   const { x,y,spread,fraction,cx=.5,cy=.52 } = settings
   const scale = object.id === 'globe'
     ? Math.min(w,h)*fraction/(size*spread)
-    : Math.min(8.2, Math.min(w*fraction,h*({ books:1.06, monitor:1.29 }[object.id] || .82))/(size*spread))
-  const bookHeight = shelfHeight || (h <= 420 ? h*.42 : Math.max(145,Math.min(h*.52,w*.79,380)))
-  const targetY = object.id==='books' ? h/2+bookHeight/2 : h*cy
+    : Math.min(8.2, Math.min(w*fraction,h*({ books:.76, monitor:1.29 }[object.id] || .82))/(size*spread))
   const projection = frontFacingMatrix(object.id, size)
   const anchor = projection.transformPoint({ x: (x-50)*size/100, y: (y-50)*size/100 })
   Object.assign(camera, {
     x:(w*cx-node.offsetLeft-scale*anchor.x/anchor.w)*100/size,
-    y:(targetY-node.offsetTop-scale*anchor.y/anchor.w)*100/size,
+    y:(h*cy-node.offsetTop-scale*anchor.y/anchor.w)*100/size,
     scale, projection: projection.toString(),
   })
-}
-function measureShelf(value) {
-  shelfHeight=value
-  if (selected.value?.id==='books') frameObject()
 }
 function drawShelf(layout) {
   shelfLayout = layout
@@ -344,7 +338,6 @@ onUnmounted(() => {
 
     <Transition name="room-angle" @after-leave="finishReturn">
       <StudyCloseup v-if="selected" ref="closeup" :object="selected" :webgl="webglReady"
-        @measure-shelf="measureShelf"
         @draw-shelf="drawShelf"
         @back="leaveDetail" />
     </Transition>

@@ -189,7 +189,7 @@ export function createStudyModels(requestDraw) {
   const oak = new MeshStandardMaterial({ map: grain, roughness: .82 })
   const shelves = [0, 1].map(row => {
     const group = new Group()
-    const plank = box(group, row ? oak.clone() : oak, 1, 1, 1, 0, 0, 0)
+    const plank = box(group, oak, 1, 1, 1, 0, 0, 0)
     const rowBooks = new Group()
     shelfBooks.slice(row*5, row*5+5).forEach((book,i) => {
       const cover = new MeshStandardMaterial({ color:book.color, roughness:.91 })
@@ -204,7 +204,7 @@ export function createStudyModels(requestDraw) {
   const shadow = shadowMaterial()
   const record = listeningStation(grain, shadow)
   const recordShadow = part(shadows, new PlaneGeometry(1, 1), shadow, 0, 0, 0)
-  const shelfShadow = part(shadows, new PlaneGeometry(1, 1), shadow, 0, 0, 0)
+  const shelfShadows = shelves.map(() => part(shadows, new PlaneGeometry(1, 1), shadow, 0, 0, 0))
   const globeShadow = part(shadows, new PlaneGeometry(1, 1), shadow, 0, 0, 0)
   const globe = globeModel(grain)
   const sun = new DirectionalLight('#fff3df', 2.4)
@@ -240,11 +240,10 @@ export function createStudyModels(requestDraw) {
     return materials
   }
 
-  function drawBooks(layout, opacity) {
+  function drawBooks(layout, opacity, viewportHeight) {
     books.forEach(mesh => { mesh.visible = false })
     if (!layout || !opacity) return
-    for (const { book, pose, visible } of layout.books) {
-      if (!visible) continue
+    for (const row of layout.rows) for (const { book, pose } of row.books) {
       let mesh = books[book.id]
       if (!mesh) {
         mesh = books[book.id] = new Mesh(bookBox, appearance(book))
@@ -252,7 +251,7 @@ export function createStudyModels(requestDraw) {
       }
       mesh.visible = true
       mesh.scale.set(pose.ws, layout.height, pose.depth)
-      mesh.position.set(pose.x, -pose.y, pose.z)
+      mesh.position.set(pose.x, viewportHeight/2-row.centerY-pose.y, pose.z)
       mesh.rotation.set(-pose.rx * Math.PI / 180, pose.ry * Math.PI / 180, 0)
     }
     for (const materials of appearances.values()) for (const material of materials) {
@@ -274,5 +273,5 @@ export function createStudyModels(requestDraw) {
     for (const geometry of geometries) geometry.dispose()
     for (const texture of textures) texture.dispose()
   }
-  return { scene, shadows, booksScene, shelves, record, recordShadow, shelfShadow, globe, globeShadow, drawBooks, dispose }
+  return { scene, shadows, booksScene, shelves, record, recordShadow, shelfShadows, globe, globeShadow, drawBooks, dispose }
 }

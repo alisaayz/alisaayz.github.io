@@ -1,9 +1,3 @@
-export const wrap = (value, length) => ((value % length) + length) % length
-
-export function shelfRelative(index, scroll, length) {
-  return wrap(index-scroll+length/2,length)-length/2
-}
-
 export function bookGeometry(height, relative, lift = 0, tiltX = 0, tiltY = 0) {
   const ws = height*142/840
   const depth = height*474/900
@@ -24,4 +18,16 @@ export function bookGeometry(height, relative, lift = 0, tiltX = 0, tiltY = 0) {
     coverShade: .5*(1-openness),
     order: Math.round(100-Math.abs(relative)*4),
   }
+}
+
+export function bookRowGeometry(height, selection, lifts, tiltX = 0, tiltY = 0) {
+  const poses = lifts.map((lift, index) => bookGeometry(height, index-selection, lift, tiltX, tiltY))
+  const halfWidth = pose => {
+    const angle = pose.ry * Math.PI / 180
+    return (pose.ws*Math.abs(Math.cos(angle)) + pose.depth*Math.abs(Math.sin(angle))) / 2
+  }
+  const left = Math.min(...poses.map(pose => pose.x-halfWidth(pose)))
+  const right = Math.max(...poses.map(pose => pose.x+halfWidth(pose)))
+  const center = (left+right)/2
+  return poses.map(pose => ({ ...pose, x:pose.x-center }))
 }

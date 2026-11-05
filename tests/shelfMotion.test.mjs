@@ -1,11 +1,16 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { bookGeometry, shelfRelative } from '../src/shelfMotion.js'
+import { bookGeometry, bookRowGeometry } from '../src/shelfMotion.js'
 
-test('the same nearest book is centered through the cyclic seam', () => {
-  assert.equal(shelfRelative(0,30,30),0)
-  assert.ok(Math.abs(shelfRelative(0,29.9,30)-.1)<1e-9)
-  assert.ok(Math.abs(shelfRelative(0,30.1,30)+.1)<1e-9)
+test('five books keep their order and stay on the shelf when either end opens', () => {
+  const height = 240
+  for (const selected of [0, 2, 4]) {
+    const row = bookRowGeometry(height, selected, Array(5).fill(0))
+    assert.equal(row.length, 5)
+    assert.deepEqual(row.map(book => book.openness), row.map((_, i) => i === selected ? 1 : 0))
+    assert.ok(row.every((book,i) => i === 0 || book.x > row[i-1].x))
+    assert.ok(row.every(book => Math.abs(book.x)+(book.openness ? book.depth : book.ws)/2 < height*.87))
+  }
 })
 test('the active book makes space for its cover and neighbours stay evenly spaced', () => {
   const active=bookGeometry(300,0)

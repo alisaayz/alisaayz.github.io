@@ -108,10 +108,7 @@ onUnmounted(() => {
   <a class="skip-link" href="#main-content">Skip to content</a>
   <div class="site-layout">
     <aside class="sidebar" aria-label="Profile and navigation">
-      <div class="sidebar-brand">
-        <span class="signature-logo" aria-hidden="true"><img :src="signature" alt="" /></span>
-        <h1>{{ profile.name }}</h1>
-      </div>
+      <h1 class="sidebar-brand"><img class="signature-logo" :src="signature" :alt="profile.name" /></h1>
       <nav class="navigation" aria-label="Main navigation">
         <a v-for="(page, index) in pages" :key="page.hash" :href="`#${page.hash}`" :class="{ active: activePage === page.hash }" :aria-current="activePage === page.hash ? 'page' : undefined" @click.prevent="navigate(page.hash)">
           <span class="nav-number" aria-hidden="true">0{{ index + 1 }}</span><span>{{ page.label }}</span>
