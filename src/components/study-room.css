@@ -38,7 +38,7 @@
 }
 .room-stage.camera-instant { transition: none }
 .room-art { width: 100%; height: 100%; display: block; pointer-events: none; filter: drop-shadow(0 12px 16px #5b422430) }
-.room-art-canvas { position: absolute; inset: 0; visibility: hidden; }
+.room-art-canvas { position:absolute; inset:0; width:100%; height:100%; visibility:hidden; pointer-events:none; }
 .art-webgl .room-art-canvas { visibility: visible; }
 .art-webgl img.room-art { opacity: 0; }
 .cork-pins { position: absolute; left: 0; top: 0; transform-origin: top left; pointer-events: none }
@@ -77,6 +77,7 @@
 .room-globe-prop { position: absolute; pointer-events: none; left: 66.4%; top: 71.6%; width: 7.6%; filter:drop-shadow(.3cqw .35cqw .3cqw #59392544); }
 .study-globe { position: relative; aspect-ratio: .8; width: 100%; display: grid; place-items: start center; isolation: isolate }
 .study-globe canvas { width: 86%; height:auto; aspect-ratio:1; border-radius:50%; margin-top:7%; z-index:1; }
+.study-globe .globe-webgl-hit { opacity:0; }
 .globe-mount { position:absolute; inset:0; width:100%; height:100%; }
 .study-globe.globe-interactive { width: min(144px,40vw); margin: 3px auto 8px }
 .globe-interactive canvas { cursor: grab; touch-action: none }

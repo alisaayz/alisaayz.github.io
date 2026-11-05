@@ -2,7 +2,8 @@
 import { onMounted, onUnmounted, ref, useId } from 'vue'
 import mapUrl from '../assets/study/world-relief.webp'
 
-const props = defineProps({ interactive: Boolean, embedded: Boolean })
+const props = defineProps({ interactive: Boolean, embedded: Boolean, webgl: Boolean })
+const emit = defineEmits(['rotate'])
 const globe = ref(null)
 const size = 256
 const metal = useId(), wood = useId(), shade = useId()
@@ -45,6 +46,8 @@ onMounted(() => {
       }
     }
     paint = () => {
+      emit('rotate', angle / map.width * 2 * Math.PI)
+      if (props.webgl) return
       for (const pixel of pixels) {
         const u = ((Math.floor(pixel.u + angle) % map.width) + map.width) % map.width
         const index = (pixel.v + u) * 4
@@ -86,7 +89,7 @@ function spin(direction) { angle += direction * 23; paint?.() }
 
 <template>
   <div class="study-globe" :class="{ 'globe-interactive': interactive, 'globe-embedded': embedded }">
-    <svg v-if="!embedded" class="globe-mount" viewBox="0 0 200 248" aria-hidden="true">
+    <svg v-if="!embedded && !webgl" class="globe-mount" viewBox="0 0 200 248" aria-hidden="true">
       <defs>
         <linearGradient :id="metal" x2="1" y2="1"><stop stop-color="#6d4d30"/><stop offset=".35" stop-color="#d5b275"/><stop offset=".57" stop-color="#f0d39a"/><stop offset=".8" stop-color="#a17849"/><stop offset="1" stop-color="#65432a"/></linearGradient>
         <linearGradient :id="wood" x2="1" y2=".2"><stop stop-color="#7e5134"/><stop offset=".34" stop-color="#bf9261"/><stop offset=".65" stop-color="#a17146"/><stop offset="1" stop-color="#694329"/></linearGradient>
@@ -98,7 +101,7 @@ function spin(direction) { angle += direction * 23; paint?.() }
       <path d="M89 168h22v28c0 10 5 18 13 22-11 6-37 6-48 0 9-5 13-12 13-22z" :fill="`url(#${wood})`" />
       <path d="M100 194c51 0 93-41 93-93s-42-93-93-93" fill="none" :stroke="`url(#${metal})`" stroke-width="8" stroke-linecap="round" transform="rotate(-23 100 101)" />
     </svg>
-    <canvas ref="globe" :width="size" :height="size"
+    <canvas ref="globe" :width="size" :height="size" :class="{ 'globe-webgl-hit':webgl }"
       :aria-label="interactive ? 'Globe. Use left and right arrow keys to turn it.' : undefined"
       :aria-hidden="interactive ? undefined : 'true'" :tabindex="interactive ? 0 : undefined"
       @pointerdown="start" @pointermove="move" @pointerup="end" @pointercancel="end" @lostpointercapture="end"

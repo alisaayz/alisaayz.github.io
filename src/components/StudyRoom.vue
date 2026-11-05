@@ -6,7 +6,7 @@ import StudyGlobe from './StudyGlobe.vue'
 import StudyCloseup from './StudyCloseup.vue'
 import StudyMonitor from './StudyMonitor.vue'
 import StudyPennants from './StudyPennants.vue'
-import { roomArt } from '../studyAssets.js'
+import { loadRoomObjectPlates, roomArt } from '../studyAssets.js'
 import { frontFacingMatrix, monitorFrame, roomFaceStyle } from '../studyFraming.js'
 import './study-room.css'
 
@@ -20,7 +20,7 @@ const returning = ref(false)
 const artReady = ref(false)
 const webglReady = ref(false)
 const artCanvas = ref(null)
-let artRenderer, startingRenderer = false, roomDisposed = false
+let artRenderer, shelfLayout, globeAngle = 0, startingRenderer = false, roomDisposed = false
 const entryKey = 'portfolio-study-entered'
 const introOpen = ref(true)
 const entryButton = ref(null)
@@ -30,10 +30,14 @@ async function roomLoaded({ currentTarget: image }) {
   if (startingRenderer) return
   startingRenderer = true
   try {
-    const { createRoomRenderer } = await import('./studyRoomRenderer.js')
+    const [{ createRoomRenderer }, patches] = await Promise.all([
+      import('./studyRoomRenderer.js'), loadRoomObjectPlates(),
+    ])
     if (roomDisposed || !artCanvas.value) return
-    artRenderer = createRoomRenderer(artCanvas.value, image, visible => { webglReady.value = visible })
+    artRenderer = createRoomRenderer(artCanvas.value, stage.value, image, patches, visible => { webglReady.value = visible })
     if (!artRenderer) return
+    artRenderer.setShelf(shelfLayout)
+    artRenderer.setGlobeAngle(globeAngle)
     artRenderer.focus(selected.value?.id, true)
     webglReady.value = true
   } catch {
@@ -68,6 +72,7 @@ let pan, catDrag, timer, previousOverflow, returnTarget, previousCamera
 const stepTimers = []
 const clamp = (v, low, high) => Math.min(high, Math.max(low, v))
 const sceneTransform = computed(() => `translate(-50%, -50%) translate(${camera.x}%, ${camera.y}%) scale(${camera.scale}) ${camera.projection}`)
+watch(sceneTransform, () => artRenderer?.invalidate(instantCamera.value || motion.matches ? 0 : 700), { flush: 'post' })
 function resetCamera() {
   instantCamera.value = false
   Object.assign(camera, { x: 0, y: 0, scale: 1, projection: neutralProjection })
@@ -208,10 +213,19 @@ function measureShelf(value) {
   shelfHeight=value
   if (selected.value?.id==='books') frameObject()
 }
+function drawShelf(layout) {
+  shelfLayout = layout
+  artRenderer?.setShelf(layout)
+}
+function rotateGlobe(angle) {
+  globeAngle = angle
+  artRenderer?.setGlobeAngle(angle)
+}
 function previewPhoto(index) { if (selected.value?.id==='photos') closeup.value?.openPhoto(index) }
 function measureRoom() {
   stageSize.value = stage.value.offsetWidth
   frameObject()
+  artRenderer?.invalidate()
 }
 function resetRoomObserver() {
   measureRoom()
@@ -263,12 +277,12 @@ onUnmounted(() => {
       <button v-if="!selected && !returning" ref="closeButton" class="room-close" type="button" @click="emit('close')" aria-label="Close study room">×</button>
     </header>
 
-    <div class="room-viewport" :inert="returning || introOpen" :class="{ 'is-panning': instantCamera }" @wheel="event => { if (!selected && !event.ctrlKey) { event.preventDefault(); wheel(event) } }"
+    <div class="room-viewport" :inert="returning || introOpen" :class="{ 'is-panning': instantCamera, 'art-webgl': webglReady }" @wheel="event => { if (!selected && !event.ctrlKey) { event.preventDefault(); wheel(event) } }"
       @pointerdown="startPan" @pointermove="movePan" @pointerup="stopPan" @pointercancel="stopPan" @lostpointercapture="stopPan">
-      <div ref="stage" class="room-stage" :class="{ 'camera-instant': instantCamera, 'art-ready': artReady, 'art-webgl': webglReady }" :style="{ transform: sceneTransform }">
+      <canvas ref="artCanvas" class="room-art-canvas" aria-hidden="true"></canvas>
+      <div ref="stage" class="room-stage" :class="{ 'camera-instant': instantCamera, 'art-ready': artReady }" :style="{ transform: sceneTransform }">
         <img class="room-art" :src="roomArt" alt="Isometric study with bamboo outside glass doors, a white desk, books, and a yellow beanbag" draggable="false" @load="roomLoaded" />
-        <canvas ref="artCanvas" class="room-art room-art-canvas" aria-hidden="true"></canvas>
-        <div v-if="selected?.id !== 'books'" class="overview-books" aria-hidden="true">
+        <div v-if="!webglReady && selected?.id !== 'books'" class="overview-books" aria-hidden="true">
           <div v-for="row in 2" :key="row" class="overview-book-row" :class="'book-row-'+row">
             <span v-for="(book,i) in shelfBooks.slice((row-1)*5,row*5)" :key="i" :style="{ '--book-color':book.color }"></span>
           </div>
@@ -283,7 +297,9 @@ onUnmounted(() => {
           </button>
         </div>
         <StudyPennants />
-        <div class="room-globe-prop" :class="{ 'globe-active':selected?.id==='globe' }"><StudyGlobe :interactive="selected?.id==='globe'" /></div>
+        <div class="room-globe-prop" :class="{ 'globe-active':selected?.id==='globe' }">
+          <StudyGlobe :interactive="selected?.id==='globe'" :webgl="webglReady" @rotate="rotateGlobe" />
+        </div>
         <template v-for="object in roomCloseups" :key="object.id">
           <div v-if="object.id==='monitor'" class="room-monitor" :class="{ 'room-live-monitor':selected?.id==='monitor' }" :style="monitorStyle">
             <StudyMonitor v-if="selected?.id==='monitor'" />
@@ -325,8 +341,9 @@ onUnmounted(() => {
     </footer>
 
     <Transition name="room-angle" @after-leave="finishReturn">
-      <StudyCloseup v-if="selected" ref="closeup" :object="selected"
+      <StudyCloseup v-if="selected" ref="closeup" :object="selected" :webgl="webglReady"
         @measure-shelf="measureShelf"
+        @draw-shelf="drawShelf"
         @back="leaveDetail" />
     </Transition>
     <div v-if="introOpen" class="room-intro">

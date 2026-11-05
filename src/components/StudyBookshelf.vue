@@ -1,12 +1,17 @@
 <script setup>
-import { computed, onMounted, onUnmounted, ref } from 'vue'
+import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import { shelfBooks } from '../study.js'
 import { bookGeometry, shelfRelative, wrap } from '../shelfMotion.js'
 
-const emit = defineEmits(['measure'])
+const props = defineProps({ webgl: Boolean })
+const emit = defineEmits(['measure','draw'])
 const strip = ref(null), probe = ref(null), stage = ref(null)
-const books = Array.from({ length:shelfBooks.length*3 },(_,i) => ({ ...shelfBooks[i%shelfBooks.length], id:i, number:i%shelfBooks.length+1 }))
-const count = books.length
+const copies = ref(3)
+const books = computed(() => Array.from({ length:shelfBooks.length*copies.value },(_,i) => {
+  const index = i % shelfBooks.length
+  const book = shelfBooks[index]
+  return { ...book, id:i, number:index+1, label:bookLabel(book,index+1), ink:bookInk(book.color) }
+}))
 function bookInk(color) {
   const levels = color.slice(1).match(/../g).map(channel => {
     const value = Number.parseInt(channel,16)/255
@@ -18,19 +23,22 @@ const motion = window.matchMedia('(prefers-reduced-motion: reduce)')
 const chosen = ref(1)
 const current = computed(() => shelfBooks[chosen.value-1])
 const bookLabel = (book, number) => book.title || `Book ${String(number).padStart(2,'0')}`
-let nodes = [], lifts = new Float32Array(count), hovered = -1
-let height = 300, width = 0, centerX = 0, centerY = 0
+let nodes = [], lifts = new Float32Array(shelfBooks.length*3), hovered = -1
+let height = 300, width = 0, centerX = 0, centerY = 0, surface = 0
 let s = shelfBooks.length, target = s, tiltX = 0, tiltY = 0, pointer = null
 let frame = 0, lastTime = 0, wheelEnd, observer, drag, ignoreClick = false
 function measure() {
   const box = strip.value.getBoundingClientRect()
   height = probe.value.getBoundingClientRect().height
   width = box.width
-  const aperture = Math.min(width,window.innerHeight*.62+180)
-  strip.value.style.setProperty('--edge',Math.max(0,(width-aperture)/2)+'px')
   centerX = box.left+box.width/2
   centerY = box.top+box.height/2
-  const { ws,depth } = bookGeometry(height,0)
+  const { ws,depth,gap } = bookGeometry(height,0)
+  const visibleCycles = Math.ceil((width + 3*depth) / ((ws+gap)*shelfBooks.length))
+  copies.value = Math.max(3, 1 + 2*Math.ceil(visibleCycles/2))
+  const bottom = (height/2) * 2200 / (2200-depth/2)
+  surface = box.top + box.height/2 + bottom
+  strip.value.parentElement.style.setProperty('--shelf-top',`${surface}px`)
   stage.value.style.setProperty('--ws',ws+'px')
   stage.value.style.setProperty('--d',depth+'px')
   emit('measure',height)
@@ -55,27 +63,30 @@ function draw(now) {
   tiltY += ((reduced ? 0 : ty)-tiltY)*ease(7)
   let easing = Math.abs(s-target)>.001 || Math.abs(tiltX-(reduced?0:tx))>.01 || Math.abs(tiltY-(reduced?0:ty))>.01
   chosen.value = wrap(Math.round(s),shelfBooks.length)+1
-  nodes.forEach((node,i) => {
-    const r = shelfRelative(i,s,count)
+  const layout = nodes.map((node,i) => {
+    const r = shelfRelative(i,s,nodes.length)
     const desired = !reduced && i===hovered && Math.abs(r)>.5 ? 1 : 0
     lifts[i] += (desired-lifts[i])*ease(12)
     if (Math.abs(lifts[i]-desired)>.01) easing = true
     const g = bookGeometry(height,r,lifts[i],tiltX,tiltY)
     const visible = Math.abs(g.x)<=width/2+1.5*g.depth
     node.style.visibility = visible ? 'visible' : 'hidden'
-    if (!visible) return
-    node.style.transform = `translate3d(${g.x}px,${g.y}px,${g.z}px) rotateX(${g.rx}deg) rotateY(${g.ry}deg)`
-    node.style.zIndex = g.order
-    node.style.setProperty('--spine-shade',g.spineShade)
-    node.style.setProperty('--cover-shade',g.coverShade)
+    if (visible) {
+      node.style.transform = `translate3d(${g.x}px,${g.y}px,${g.z}px) rotateX(${g.rx}deg) rotateY(${g.ry}deg)`
+      node.style.zIndex = g.order
+      node.style.setProperty('--spine-shade',g.spineShade)
+      node.style.setProperty('--cover-shade',g.coverShade)
+    }
+    return { book:books.value[i], pose:g, visible }
   })
+  emit('draw',{ height, surface, books:layout })
   if (easing) frame = requestAnimationFrame(draw)
 }
 function setHover(index) { hovered=index; requestDraw() }
 function turn(index) {
   if (ignoreClick) return
   clearTimeout(wheelEnd)
-  target = Math.round(s+shelfRelative(index,s,count))
+  target = Math.round(s+shelfRelative(index,s,nodes.length))
   requestDraw()
 }
 function step(direction) {
@@ -117,8 +128,14 @@ function finish(event) {
   if (ignoreClick) { target=Math.round(s); requestDraw() }
 }
 function leave() { pointer=null; setHover(-1) }
-onMounted(() => {
+function collectBooks() {
   nodes=[...stage.value.querySelectorAll('.tape')]
+  lifts = new Float32Array(nodes.length)
+  requestDraw()
+}
+watch(copies, collectBooks, { flush:'post' })
+onMounted(() => {
+  collectBooks()
   observer=new ResizeObserver(measure)
   observer.observe(strip.value)
   strip.value.addEventListener('wheel',wheel,{ passive:false })
@@ -133,13 +150,14 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div class="book-shelf-view">
+  <div class="book-shelf-view" :class="{ 'webgl-books':props.webgl }">
     <div ref="probe" class="shelf-height-probe" aria-hidden="true"></div>
+    <div v-if="!props.webgl" class="shelf-plank-fallback" aria-hidden="true"></div>
     <section ref="strip" class="book-shelf-strip" tabindex="0" aria-label="Bookshelf carousel. Use the left and right arrows to turn books."
       @keydown.left.prevent="step(-1)" @keydown.right.prevent="step(1)"
       @pointerdown="start" @pointermove="move" @pointerup="finish" @pointercancel="finish" @lostpointercapture="finish" @pointerleave="leave">
       <div ref="stage" class="shelf-stage" aria-hidden="true">
-        <div v-for="book in books" :key="book.id" class="tape" :style="{ '--book-color':book.color, '--book-ink':bookInk(book.color) }">
+        <div v-for="book in books" :key="book.id" class="tape" :style="{ '--book-color':book.color, '--book-ink':book.ink }">
           <span class="book-face sp" @pointerenter="setHover(book.id)" @pointerleave="setHover(-1)" @click="turn(book.id)">
             <span>{{ bookLabel(book,book.number) }}</span>
           </span>
@@ -161,7 +179,9 @@ onUnmounted(() => {
 <style scoped>
 .book-shelf-view { --H:clamp(145px,min(52dvh,79vw),380px); position:absolute; inset:0; overflow:hidden; pointer-events:none; z-index:5; }
 .shelf-height-probe { position:absolute; left:-9999px; height:var(--H); width:1px; visibility:hidden; }
-.book-shelf-strip { position:absolute; left:0; width:100%; top:calc(50% - var(--H) / 2 - 40px); height:calc(var(--H) + 80px); perspective:2200px; perspective-origin:50% 50%; touch-action:pan-y; pointer-events:auto; cursor:grab; user-select:none; clip-path:inset(-32px var(--edge,0px) -32px); }
+.book-shelf-strip { position:absolute; left:0; width:100%; top:calc(50% - var(--H) / 2 - 40px); height:calc(var(--H) + 80px); perspective:2200px; perspective-origin:50% 50%; touch-action:pan-y; pointer-events:auto; cursor:grab; user-select:none; }
+.webgl-books .book-face { opacity:0; }
+.shelf-plank-fallback { position:absolute; inset:var(--shelf-top) -40px auto; height:max(14px,calc(var(--H)*.075)); border-top:1px solid #d8aa78; background:linear-gradient(#b9824c,#906035); box-shadow:0 12px 16px #3f241f45; }
 .book-shelf-strip:active { cursor:grabbing }
 .shelf-stage,.tape { position:absolute; width:0; height:0; transform-style:preserve-3d; }
 .shelf-stage { top:50%; left:50%; }
