@@ -3,7 +3,7 @@ export const propsInRoom = [
   { id: 'books', label: 'Bookshelf', x: 13, y: 41, w: 14, h: 18 },
   { id: 'photos', label: 'Photo wall', x: 68.5, y: 28.5, w: 26, h: 27, shape: '0 0,100% 42%,100% 100%,0 59%' },
   { id: 'flags', label: 'Pennants', x: 88.5, y: 35.5, w: 10.5, h: 14 },
-  { id: 'monitor', label: 'Computer', x: 68, y: 41.6, w: 21, h: 16.2, shape: '0 0,100% 53%,100% 100%,0 47%' },
+  { id: 'monitor', label: 'Computer' },
   { id: 'desk', label: 'Desk', x: 70, y: 50.1, w: 18, h: 8, shape: '10% 0,100% 63%,90% 100%,0 43%' },
   { id: 'golf', label: 'Golf bag', x: 12.4, y: 61, w: 9, h: 20.5 },
   { id: 'beanbag', label: 'Beanbag', x: 30.7, y: 71.7, w: 24, h: 20.8, shape: '21% 5%,59% 0,85% 22%,100% 60%,92% 83%,61% 99%,18% 95%,3% 73%,0 47%' },

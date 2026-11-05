@@ -7,7 +7,7 @@ import StudyCloseup from './StudyCloseup.vue'
 import StudyMonitor from './StudyMonitor.vue'
 import StudyPennants from './StudyPennants.vue'
 import { roomArt } from '../studyAssets.js'
-import { frontFacingMatrix, roomFaceStyle } from '../studyFraming.js'
+import { frontFacingMatrix, monitorFrame, roomFaceStyle } from '../studyFraming.js'
 import './study-room.css'
 
 const emit = defineEmits(['close'])
@@ -186,14 +186,14 @@ function frameObject() {
   const size = node.offsetWidth || 1
   const settings = {
     books: { x:12.75, y:39.8, spread:.14, fraction:w<=650?.91:.57 },
-    monitor: { x:67.8, y:41.42, spread:.206, fraction:.83 },
+    monitor: { ...monitorFrame, fraction:.83, cy:.5 },
     photos: { x:68.8, y:28.8, spread:.26, fraction:.73 },
     record: { x:51.1, y:76.4, spread:.155, fraction:.43, cx:w>650?.39:.50, cy:w>650?.52:.44 },
     golf: { x:12.4, y:61, spread:.15, fraction:.37 },
     globe: { x:70.2, y:77.1, spread:.09, fraction:.32 },
   }[object.id] || { x:object.x, y:object.y, spread:.12, fraction:.34, cy:w>650?.50:.42, cx:w>650?.39:.5 }
   const { x,y,spread,fraction,cx=.5,cy=.52 } = settings
-  const scale = Math.min(8.2, Math.min(w*fraction,h*({ books:1.06, monitor:1.5 }[object.id] || .82))/(size*spread))
+  const scale = Math.min(8.2, Math.min(w*fraction,h*({ books:1.06, monitor:1.29 }[object.id] || .82))/(size*spread))
   const bookHeight = shelfHeight || Math.max(145,Math.min(h*.52,w*.79,380))
   const targetY = object.id==='books' ? h/2+bookHeight/2 : h*cy
   const projection = frontFacingMatrix(object.id, size)
@@ -284,15 +284,21 @@ onUnmounted(() => {
         </div>
         <StudyPennants />
         <div class="room-globe-prop" :class="{ 'globe-active':selected?.id==='globe' }"><StudyGlobe :interactive="selected?.id==='globe'" /></div>
-        <div v-if="selected?.id==='monitor'" class="room-live-monitor" :style="monitorStyle"><StudyMonitor /></div>
-
-        <button v-for="object in roomCloseups" v-show="!selected" :key="object.id" type="button" class="room-hotspot"
-          :aria-label="object.label"
-          :style="{ left: object.x+'%', top: object.y+'%', width: object.w+'%', height: object.h+'%', '--shape': object.shape ? `polygon(${object.shape})` : 'inset(0 round 14%)' }"
-          @click="inspect(object, $event.currentTarget)">
-          <span class="hotspot-hit" aria-hidden="true"></span>
-          <span class="room-tag" aria-hidden="true">{{ object.label }}</span>
-        </button>
+        <template v-for="object in roomCloseups" :key="object.id">
+          <div v-if="object.id==='monitor'" class="room-monitor" :class="{ 'room-live-monitor':selected?.id==='monitor' }" :style="monitorStyle">
+            <StudyMonitor v-if="selected?.id==='monitor'" />
+            <button v-show="!selected" type="button" class="monitor-hotspot" :aria-label="object.label" @click="inspect(object, $event.currentTarget)">
+              <span class="room-tag" aria-hidden="true">{{ object.label }}</span>
+            </button>
+          </div>
+          <button v-else v-show="!selected" type="button" class="room-hotspot"
+            :aria-label="object.label"
+            :style="{ left: object.x+'%', top: object.y+'%', width: object.w+'%', height: object.h+'%', '--shape': object.shape ? `polygon(${object.shape})` : 'inset(0 round 14%)' }"
+            @click="inspect(object, $event.currentTarget)">
+            <span class="hotspot-hit" aria-hidden="true"></span>
+            <span class="room-tag" aria-hidden="true">{{ object.label }}</span>
+          </button>
+        </template>
 
         <button v-for="(cat,i) in cats" :key="cat.name" class="room-cat" type="button" :aria-label="selected?.cat === i ? 'Play with '+cat.name : cat.name" :inert="!!selected && selected.cat !== i"
           :class="[cat.pose, { 'cat-held': draggingCat === i, 'cat-inspected':selected?.cat === i, 'cat-mouse': i === 1 && cat.activity === 'desk', 'cat-keyboard': i === 0 && cat.activity === 'desk', 'cat-walking': cat.walking }]"

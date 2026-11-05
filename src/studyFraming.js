@@ -1,8 +1,23 @@
 const artworkSize = 2508
+const monitorWidth = 425
+const monitorHeight = monitorWidth * 9 / 16
+const monitorLeft = 1490, monitorRight = monitorLeft + monitorWidth
+const monitorBottomLeft = 1052, monitorBottomRight = 1228
+
+export const monitorFrame = {
+  x: (monitorLeft + monitorRight) / 2 / artworkSize * 100,
+  y: (monitorBottomLeft + monitorBottomRight - monitorHeight) / 2 / artworkSize * 100,
+  spread: monitorWidth / artworkSize,
+}
 
 // Front faces measured in the room artwork, clockwise from the upper left.
 const faces = {
-  monitor: [[1446, 855], [1953, 1072], [1953, 1238], [1446, 1029]],
+  monitor: [
+    [monitorLeft, monitorBottomLeft - monitorHeight],
+    [monitorRight, monitorBottomRight - monitorHeight],
+    [monitorRight, monitorBottomRight],
+    [monitorLeft, monitorBottomLeft],
+  ],
   photos: [[1389, 372], [2047, 660], [2047, 1064], [1388, 785]],
   books: [[226, 1058], [490, 938], [490, 959], [226, 1079]],
   record: [[1119, 1956], [1364, 1991], [1364, 2033], [1119, 1998]],

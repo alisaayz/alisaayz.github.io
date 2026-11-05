@@ -294,9 +294,16 @@
 .room-stage .cork-active .cork-print:hover,.room-stage .cork-active .cork-print:focus-visible { z-index:3; scale:1.075; }
 .room-globe-prop.globe-active { pointer-events:auto; }
 .room-globe-prop .study-globe.globe-interactive { width:100%; margin:0; }
-.room-live-monitor {
-  position:absolute; left:0; top:0; z-index:3; transform-origin:top left;
+.room-monitor {
+  position:absolute; left:0; top:0; z-index:2; transform-origin:top left; pointer-events:none;
+  background:linear-gradient(155deg,#373530,#252421 66%,#292824);
+  border-radius:.08cqw;
+  box-shadow:0 0 0 .19cqw #34322e, .32cqw -.12cqw 0 .21cqw #555049,
+    0 .3cqw .46cqw .15cqw #48372a4a;
 }
+.room-live-monitor { pointer-events:auto; }
+.monitor-hotspot { position:absolute; inset:0; width:100%; border:0; background:none; cursor:pointer; pointer-events:auto; }
+.monitor-hotspot:hover .room-tag,.monitor-hotspot:focus-visible .room-tag { opacity:1; translate:-50% -5px; }
 .room-live-monitor .monitor-browser {
   position:absolute; inset:0 auto auto 0; width:calc(100% * var(--screen-scale)); height:calc(100% * var(--screen-scale));
   transform:scale(calc(1 / var(--screen-scale))); transform-origin:top left;

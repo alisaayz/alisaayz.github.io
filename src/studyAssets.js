@@ -1,4 +1,4 @@
-import roomArt from './assets/study/room-live-shelf.webp'
+import roomArt from './assets/study/room-monitor-ready.webp'
 export { roomArt }
 const warmed = new Map()
 
