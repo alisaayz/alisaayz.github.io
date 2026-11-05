@@ -11,7 +11,7 @@ import signature from './assets/personal/signature-transparent.png'
 import onoPhoto from './assets/personal/ono.jpg'
 import yuzuPhoto from './assets/personal/yuzu.jpg'
 import uclaLogo from './assets/logos/ucla-seal.svg'
-import wfuLogo from './assets/logos/wfu-shield.webp'
+import wfuLogo from './assets/logos/wfu-seal.webp'
 
 const pages = [
   { label: 'About Me', hash: 'about' },
@@ -182,7 +182,7 @@ onUnmounted(() => {
               <li v-for="education in resume.education" :key="education.school">
                 <div class="education-heading">
                   <span class="school-logo" :class="education.school.startsWith('UCLA') ? 'school-logo-ucla' : 'school-logo-wfu'">
-                    <img :src="education.school.startsWith('UCLA') ? uclaLogo : wfuLogo" :alt="education.school.startsWith('UCLA') ? 'UCLA campus seal' : 'Wake Forest University shield'" />
+                    <img :src="education.school.startsWith('UCLA') ? uclaLogo : wfuLogo" :alt="education.school.startsWith('UCLA') ? 'UCLA campus seal' : 'Wake Forest University seal'" />
                   </span>
                   <h4>{{ education.school }}</h4>
                 </div>

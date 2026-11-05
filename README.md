@@ -26,4 +26,4 @@ npm run build
 
 Pushes to `main` build and publish through `.github/workflows/deploy.yml` at [alisaayz.github.io](https://alisaayz.github.io/).
 
-The Education tab and room pennants use the [UCLA campus seal depiction](https://commons.wikimedia.org/wiki/File:The_University_of_California_UCLA.svg) and the [Wake Forest University shield](https://brand.wfu.edu/our-brand-identity/shield-logo/).
+The Education tab uses the [UCLA campus seal depiction](https://commons.wikimedia.org/wiki/File:The_University_of_California_UCLA.svg) and Alisa’s supplied Wake Forest University seal. The study room pennants use the UCLA and WF wordmarks.

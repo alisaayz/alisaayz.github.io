@@ -106,18 +106,16 @@
 }
 @media(max-height: 510px) { .room-stage { top: 46% } .room-title span { display: none } }
 
-/* Match the wall perspective in the overview; keep crests level in close-ups. */
+/* Align the wordmarks to the pennant fabric in each view. */
 .study-pennants { position:absolute; inset:0; pointer-events:none }
-.study-pennant { position:absolute; display:block; aspect-ratio:1; object-fit:contain; height:auto }
-.pennant-ucla { background:#f8eed8; border-radius:50%; padding:.09em; }
-.pennant-wfu { filter: brightness(0) saturate(100%) invert(79%) sepia(34%) saturate(560%) hue-rotate(350deg) brightness(100%) }
+.study-pennant { position:absolute; display:block; object-fit:contain; height:auto }
 .pennants-overview .study-pennant { transform:skewY(22deg); transform-origin:center }
-.pennants-overview .pennant-ucla { left:85.6%; top:30.7%; width:2.6%; padding:.12cqw }
-.pennants-overview .pennant-wfu { left:85.45%; top:38.3%; width:2.55% }
-.pennants-globe .pennant-ucla { left:82.75%; top:4.2%; width:4.25% }
-.pennants-globe .pennant-wfu { left:82.6%; top:12.65%; width:4.45% }
-.pennants-record .pennant-ucla { left:50%; top:5.85%; width:2.1% }
-.pennants-record .pennant-wfu { left:49.95%; top:14.9%; width:2.18% }
+.pennants-overview .pennant-ucla { left:85.65%; top:31.6%; width:3.1% }
+.pennants-overview .pennant-wfu { left:85.5%; top:38.55%; width:2.9% }
+.pennants-globe .pennant-ucla { left:82.7%; top:6%; width:4.6% }
+.pennants-globe .pennant-wfu { left:82.6%; top:13.2%; width:4.7% }
+.pennants-record .pennant-ucla { left:50%; top:7.35%; width:2.3% }
+.pennants-record .pennant-wfu { left:50%; top:15.4%; width:2.3% }
 .item-view { position: absolute; inset: 0; z-index: 5; background: #f5eee2; opacity: 1; animation: item-reveal .37s .22s both; }
 @keyframes item-reveal { from { opacity: 0 } to { opacity: 1 } }
 .item-return { position: absolute; z-index: 4; left: clamp(14px,4vw,52px); top: clamp(78px,16vh,110px); border: 1px solid #d1c3af; border-radius: 20px; padding: 6px 13px; background: #fbf6eb; font: 550 .74rem/1.45 var(--sans) }
