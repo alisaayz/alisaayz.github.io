@@ -7,7 +7,6 @@ import { profile } from './portfolio.js'
 import { resume } from './resume.js'
 import { featuredProjects } from './projects.js'
 import { preloadArt, roomArt } from './studyAssets.js'
-import headshot from './assets/personal/headshot-2026.webp'
 import signature from './assets/personal/signature-transparent.png'
 import onoPhoto from './assets/personal/ono.jpg'
 import yuzuPhoto from './assets/personal/yuzu.jpg'
@@ -131,10 +130,6 @@ onUnmounted(() => {
         <div class="hero-copy">
           <p class="eyebrow">01 <span>/</span> About Me</p>
           <h2><SplitFlapGreeting text="Hi, I'm Alisa" /></h2>
-
-        </div>
-        <div class="hero-visual">
-          <div class="headshot-photo"><img :src="headshot" alt="Alisa Zhu headshot" /></div>
         </div>
         <div class="hero-description">
           <p class="about-tagline">Turning data into better business decisions.</p>
@@ -258,7 +253,21 @@ onUnmounted(() => {
     </main>
   </div>
   <button ref="corner" class="page-fold" type="button" aria-label="Open the study room" aria-haspopup="dialog" :aria-expanded="roomOpen" @pointerenter="warmStudy" @focus="warmStudy" @click="roomOpen = true">
-    <span class="fold-face" aria-hidden="true"></span>
+    <svg class="fold-art" viewBox="0 0 176 132" aria-hidden="true" focusable="false">
+      <defs>
+        <linearGradient id="fold-reveal" x2="22%" y2="100%">
+          <stop stop-color="#405e78" />
+          <stop offset="1" stop-color="#253d53" />
+        </linearGradient>
+        <linearGradient id="fold-paper" x1="35%" y1="78%" x2="69%" y2="31%">
+          <stop stop-color="#c9d9e6" />
+          <stop offset=".5" stop-color="#91acc2" />
+          <stop offset="1" stop-color="#5d7b96" />
+        </linearGradient>
+      </defs>
+      <path class="fold-reveal" fill="url(#fold-reveal)" d="M 24 0 H 176 V 118 C 141 65 83 25 24 0 Z" />
+      <path class="fold-paper" fill="url(#fold-paper)" d="M 24 0 C 83 25 141 65 176 118 C 149 90 123 79 97 73 C 107 50 70 21 24 0 Z" />
+    </svg>
     <span class="fold-label" aria-hidden="true"><span>Study Room</span><span class="fold-demo">demo</span></span>
   </button>
   <dialog ref="skillDialog" class="skill-dialog" aria-labelledby="skill-dialog-title">

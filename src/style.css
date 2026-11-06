@@ -55,13 +55,11 @@ svg { width: 1em; height: 1em; vertical-align: -.1em; flex-shrink: 0 }
 .mobile-appearance-footer { display: none }
 main:focus { outline: none }
 .about-page,.page-content { width: min(100%, 960px); padding: 76px clamp(25px,5.6vw,80px) 68px; margin: auto }
-.about-page { display: grid; grid-template-columns: minmax(0,1fr) minmax(135px, 175px); column-gap: clamp(16px,4vw,50px); row-gap: 23px; align-items: center }
+.about-page { display: grid; grid-template-columns: minmax(0,1fr); gap: 23px }
 .hero-copy h2,.page-header h2 { font-family:var(--type); font-size: clamp(2.3rem,4.5vw,3.85rem); font-weight: 600; letter-spacing: -.065em; line-height: 1.04; margin: 15px 0 16px }
 .about-tagline { font-size: clamp(1.1rem,2vw,1.5rem); line-height: 1.3 }
 .about-meta { font: .78rem/1.5 var(--sans); color: var(--muted); margin-top: 14px }
-.headshot-photo { border: 1px solid var(--line); padding: 0; background: var(--soft); transform: none }
-.headshot-photo img { width: 100%; aspect-ratio: 1; object-fit: cover; object-position: center 22%; display: block }
-.about-story { grid-column: 1 / -1; border-top: 1px solid var(--line); padding-top: 25px; max-width: 68ch }
+.about-story { border-top: 1px solid var(--line); padding-top: 25px; max-width: 68ch }
 .about-story p+p { margin-top: 16px }
 .page-header { margin-bottom: 28px }
 h3 { font-size: 1.43rem; line-height: 1.3; font-weight: 400 }
@@ -114,50 +112,51 @@ h5,h6 { font: 650 .91rem/1.4 var(--sans) }
 .cat-grid { margin-top: 12px }
 .cat-card img { width: 100%; aspect-ratio: 4/5; object-fit: cover; display: block }
 .page-fold {
-  --fold-edge: 76px;
-  --fold-width: 152px;
-  --fold-height: 108px;
-  --fold-ease: .44s cubic-bezier(.24,.78,.26,1);
+  --fold-width: 176px;
+  --fold-ease: .58s cubic-bezier(.2,.72,.25,1);
   position: fixed; inset: 0 0 auto auto; z-index: 8;
-  width: calc(var(--fold-edge)/2); height: calc(var(--fold-edge)/2);
+  width: 38px; height: 38px;
   border: 0; padding: 0; color: #f8fcff; background: transparent;
 }
-.page-fold::after,.fold-face {
+.fold-art {
   position: absolute; inset: 0 0 auto auto;
-  width: var(--fold-width); height: var(--fold-height);
+  width: var(--fold-width); height: auto; overflow: visible;
+  pointer-events: none; transform-origin: top right;
+  transform: scale(.54); transition: transform var(--fold-ease);
 }
-.page-fold::after {
-  content: ''; background: #385672;
-  clip-path: polygon(calc(100% - var(--fold-edge)) 0,100% 0,100% var(--fold-edge));
-  transition: clip-path var(--fold-ease), background-color var(--fold-ease);
+.fold-art path { pointer-events: visiblePainted }
+.fold-paper {
+  stroke: #d6e4ef; stroke-width: .75; stroke-linejoin: round;
+  filter: drop-shadow(-2px 4px 4px #17283f55);
 }
-.fold-face {
-  z-index: 1; pointer-events: none; background: linear-gradient(145deg,#91aabf,#6685a0);
-  clip-path: polygon(calc(100% - var(--fold-edge)) 0,100% var(--fold-edge),
-    calc(100% - var(--fold-edge)*.18) calc(var(--fold-edge)*.52),
-    calc(100% - var(--fold-edge)*.55) calc(var(--fold-edge)*.30));
-  transition: clip-path var(--fold-ease);
-}
+.page-fold:is(:hover,:focus-visible) .fold-art { transform: none }
 .page-fold::before { content: '↗'; position: absolute; z-index: 2; top: 5px; right: 13px; font: 1.3rem var(--sans); transition: opacity .2s ease }
 .fold-label {
-  position: absolute; z-index: 2; top: 16px; right: 13px; display: grid; justify-items: end; gap: 4px; pointer-events: none;
+  position: absolute; z-index: 2; top: 13px; right: 13px; display: grid; justify-items: end; gap: 4px; pointer-events: none;
   opacity: 0; transform: translateY(-4px); white-space: nowrap; font: 600 .72rem/1.15 var(--sans);
   transition: opacity .22s ease, transform .32s ease;
 }
 .fold-demo { color: #dbe8f3; font: 500 .63rem/1 var(--mono); }
-.page-fold:is(:hover,:focus-visible)::after { clip-path: polygon(0 0,100% 0,100% 100%); background: #395a79 }
-.page-fold:is(:hover,:focus-visible) .fold-face { clip-path: polygon(0 0,100% 100%,84% 60%,45% 32%) }
-.page-fold:is(:hover,:focus-visible) .fold-label { opacity: 1; transform: none; transition-delay: .09s }
+.page-fold:is(:hover,:focus-visible) .fold-label { opacity: 1; transform: none; transition-delay: .15s }
 .page-fold:is(:hover,:focus-visible)::before { opacity: 0 }
+@media (hover: hover) {
+  @supports (d: path("M 0 0")) {
+    .fold-art { transform: none }
+    .fold-art path { transition: d var(--fold-ease) }
+    .fold-reveal { d: path("M 108 0 H 176 V 64 C 163 38 136 15 108 0 Z") }
+    .fold-paper { d: path("M 108 0 C 136 15 163 38 176 64 C 162 48 151 44 138 41 C 145 29 129 11 108 0 Z") }
+    .page-fold:is(:hover,:focus-visible) .fold-reveal { d: path("M 24 0 H 176 V 118 C 141 65 83 25 24 0 Z") }
+    .page-fold:is(:hover,:focus-visible) .fold-paper { d: path("M 24 0 C 83 25 141 65 176 118 C 149 90 123 79 97 73 C 107 50 70 21 24 0 Z") }
+  }
+}
 @media (hover: none) {
-  .page-fold { --fold-width: 113px; --fold-height: 84px; width: 44px; height: 44px }
-  .page-fold::after { clip-path: polygon(0 0,100% 0,100% 100%) }
-  .page-fold .fold-face { clip-path: polygon(0 0,100% 100%,84% 60%,45% 32%) }
-  .page-fold .fold-label { opacity: 1; transform: none }
+  .page-fold { --fold-width: 122px; width: 44px; height: 44px }
+  .fold-art { transform: none }
+  .page-fold .fold-label { top: 9px; right: 9px; opacity: 1; transform: none }
   .page-fold::before { opacity: 0 }
 }
 @media (prefers-reduced-motion: reduce) {
-  .fold-face,.fold-label,.page-fold::before,.page-fold::after { transition: none }
+  .fold-art,.fold-art path,.fold-label,.page-fold::before { transition: none }
 }
 @media(max-width: 760px) {
   .site-layout { grid-template-columns: 1fr }
@@ -170,11 +169,12 @@ h5,h6 { font: 650 .91rem/1.4 var(--sans) }
   .sidebar-appearance { display: none }
   .mobile-appearance-footer { display: block; border-top: 1px solid var(--line); padding: 12px 23px 24px }
   .about-page,.page-content { padding: 36px 23px 42px }
-  .page-fold { --fold-edge: 58px }
+  @media (hover: hover) {
+    .page-fold { --fold-width: 152px }
+  }
 }
 @media(max-width: 465px) {
-  .about-page { grid-template-columns: minmax(0,1fr) 105px; gap: 22px 12px }
-  .hero-copy h2 { font-size: clamp(1.5rem,6.8vw,2.35rem) }
+  .hero-copy h2 { font-size: clamp(1.65rem,8vw,2.35rem) }
   .about-tagline { font-size: 1rem }
   .about-meta { font-size: .71rem }
   .captioned-gallery { grid-template-columns: repeat(2,minmax(0,1fr)) }
@@ -185,10 +185,7 @@ h5,h6 { font: 650 .91rem/1.4 var(--sans) }
 }
 
 .page-header h2 { text-transform: uppercase; max-width: 26ch; font-size: clamp(2rem,4.2vw,3.2rem); line-height: 1.09; overflow-wrap: anywhere }
-.hero-copy { grid-column: 1; grid-row: 1; }
 .hero-copy h2 { margin-bottom: 2px }
-.hero-visual { grid-column: 2; grid-row: 1; }
-.hero-description { grid-column: 1/-1; min-width:0; }
 .about-tagline { white-space: nowrap; font-size:clamp(.88rem,1.65vw,1.25rem); font-weight: 600; letter-spacing:-.025em; line-height:1.4 }
 .about-meta { margin-top: 7px; font-size: .75rem; color: var(--accent) }
 .about-story { line-height: 1.75; padding-top: 18px; }
@@ -216,18 +213,11 @@ h5,h6 { font: 650 .91rem/1.4 var(--sans) }
 .skill-dialog li+li { margin-top:6px }
 .skill-dialog button { background:var(--soft); border:1px solid var(--line); color:var(--accent); padding:5px 8px; text-align:left }
 .skill-dialog button:hover { text-decoration:underline }
-@media(min-width:1040px) {
-  .hero-copy { align-self:end }
-  .hero-visual { grid-row:1/3 }
-  .hero-description { grid-column:1; align-self:start }
-}
 @media(max-width:760px) {
   .sidebar-links { font-size:.69rem }
   .about-tagline { font-size:clamp(.8rem,3.65vw,1.02rem); }
 }
 @media(max-width:370px) {
-  .about-page { grid-template-columns:minmax(0,1fr) 86px; }
-  .hero-copy h2 { font-size:6.5vw; }
   .about-tagline { font-size:3.62vw; }
 }
 
@@ -238,4 +228,3 @@ h5,h6 { font: 650 .91rem/1.4 var(--sans) }
 }
 
 .primary-button,.secondary-button,.appearance-options button,.interest-tags button { border-radius:var(--radius) }
-.headshot-photo { border-radius:var(--radius); overflow:hidden; box-shadow:var(--shadow) }
