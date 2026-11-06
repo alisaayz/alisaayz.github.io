@@ -5,6 +5,13 @@ const monitorLeft = 1490, monitorRight = monitorLeft + monitorWidth
 const monitorBottomLeft = 1052, monitorBottomRight = 1228
 export const roomFloorPitch = 28.5 * Math.PI / 180
 export const closeupFloorPitch = Math.PI / 6
+export const golfAnchor = [314, 1767]
+export const golfFrame = {
+  x: golfAnchor[0] / artworkSize * 100,
+  y: (golfAnchor[1] - 280) / artworkSize * 100,
+  width: 224 / artworkSize,
+  height: 576 / artworkSize,
+}
 export const leftWallEdge = [[123, 726], [1254, 153]]
 const rightWallEdge = [[1254, 153], [2379, 724]]
 
@@ -13,6 +20,7 @@ function wallFace(edge, left, top, width, height) {
   const rise = width * (y2 - y1) / (x2 - x1)
   return [[left, top], [left + width, top + rise], [left + width, top + rise + height], [left, top + height]]
 }
+const shelfWallFace = wallFace(leftWallEdge, 226, 1058, 264, 21)
 
 export const monitorFrame = {
   x: (monitorLeft + monitorRight) / 2 / artworkSize * 100,
@@ -29,8 +37,8 @@ const faces = {
     [monitorLeft, monitorBottomLeft],
   ],
   photos: wallFace(rightWallEdge, 1390, 330, 650, 388),
-  books: wallFace(leftWallEdge, 226, 1058, 264, 21),
-  golf: [[260, 1397], [386, 1397], [390, 1774], [264, 1774]],
+  books: shelfWallFace,
+  golf: shelfWallFace,
 }
 
 function artworkPlane(corners, size) {

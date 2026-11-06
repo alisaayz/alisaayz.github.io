@@ -7,7 +7,7 @@ import StudyCloseup from './StudyCloseup.vue'
 import StudyMonitor from './StudyMonitor.vue'
 import StudyPennants from './StudyPennants.vue'
 import { loadRoomObjectPlates, roomArt } from '../studyAssets.js'
-import { frontFacingMatrix, monitorFrame, roomFaceStyle } from '../studyFraming.js'
+import { frontFacingMatrix, golfFrame, monitorFrame, roomFaceStyle } from '../studyFraming.js'
 import './study-room.css'
 
 const emit = defineEmits(['close'])
@@ -194,13 +194,14 @@ function frameObject() {
     monitor: { ...monitorFrame, fraction:.83, cy:.5 },
     photos: { x:68.4, y:27.5, spread:.26, fraction:.73 },
     record: { x:50.8, y:79.4, spread:.155, fraction:w>650?.43:.59, cx:w>650?.39:.50, cy:w>650?.50:.44 },
-    golf: { x:12.4, y:61, spread:.15, fraction:.37 },
+    golf: { ...golfFrame, cy:.51 },
     globe: { x:70.18, y:76.54, spread:154/2508, fraction:.6, cy:.46 },
   }[object.id] || { x:object.x, y:object.y, spread:.12, fraction:.34, cy:w>650?.50:.42, cx:w>650?.39:.5 }
   const { x,y,spread,fraction,cx=.5,cy=.52 } = settings
-  const scale = object.id === 'globe'
-    ? Math.min(w,h)*fraction/(size*spread)
-    : Math.min(8.2, Math.min(w*fraction,h*({ books:.76, monitor:1.29 }[object.id] || .82))/(size*spread))
+  let scale
+  if (object.id === 'golf') scale = Math.min(w*.77/golfFrame.width,h*.78/golfFrame.height)/size
+  else if (object.id === 'globe') scale = Math.min(w,h)*fraction/(size*spread)
+  else scale = Math.min(8.2, Math.min(w*fraction,h*({ books:.76, monitor:1.29 }[object.id] || .82))/(size*spread))
   const projection = frontFacingMatrix(object.id, size)
   const anchor = projection.transformPoint({ x: (x-50)*size/100, y: (y-50)*size/100 })
   Object.assign(camera, {

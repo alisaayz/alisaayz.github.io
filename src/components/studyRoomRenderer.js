@@ -1,6 +1,6 @@
 import { CanvasTexture, MathUtils, Matrix4, Mesh, MeshBasicMaterial, OrthographicCamera, PerspectiveCamera, PlaneGeometry, Scene, SRGBColorSpace, WebGLRenderer } from 'three'
 import { createStudyModels, globeAnchor, recordAnchor, shelfAnchor } from './studyModels.js'
-import { closeupFloorPitch, leftWallEdge, roomFloorPitch } from '../studyFraming.js'
+import { closeupFloorPitch, golfAnchor, leftWallEdge, roomFloorPitch } from '../studyFraming.js'
 
 const CAMERA_ARCS = {
   books: [-.19, -.065], golf: [-.16, -.095], monitor: [.18, -.045],
@@ -101,8 +101,8 @@ export function createRoomRenderer(canvas, stage, image, patches, onVisibility) 
   const translation = new Matrix4(), scaleMatrix = new Matrix4()
   let frame = 0, lost = false, disposed = false, subject, lastSubject, shelfLayout
   let width = 0, height = 0, dpr = 0, movingUntil = 0, focusStart = -Infinity
-  let yaw = 0, pitch = 0, shelfAmount = 0, recordAmount = 0, floorAmount = 0
-  let startShelf = 0, startRecord = 0, startFloor = 0, arcYaw = 0, arcPitch = 0
+  let yaw = 0, pitch = 0, shelfAmount = 0, recordAmount = 0, floorAmount = 0, golfAmount = 0
+  let startShelf = 0, startRecord = 0, startFloor = 0, startGolf = 0, arcYaw = 0, arcPitch = 0
   let globeAngle = 0, globeVisible = false
 
   function resize() {
@@ -183,10 +183,22 @@ export function createRoomRenderer(canvas, stage, image, patches, onVisibility) 
     models.globeShadow.position.set(globePoint.x, globePoint.y, 0)
     models.globeShadow.scale.set(124*globeScale, 124*Math.sin(floorPitch)*globeScale, 1)
 
+    const golfPoint = artPoint(...golfAnchor)
+    const golfScale = pixelScale(...golfAnchor)
+    const golfPitch = MathUtils.lerp(floorPitch, Math.PI/18, golfAmount)
+    models.golf.position.set(golfPoint.x, golfPoint.y, 0)
+    models.golf.scale.setScalar(golfScale)
+    models.golf.rotation.set(golfPitch, .46*(1-golfAmount), .025*(1-golfAmount), 'ZXY')
+    models.golfShadow.position.set(golfPoint.x+9*golfScale, golfPoint.y-4*golfScale, 0)
+    models.golfShadow.scale.set(206*golfScale, (38+84*Math.sin(golfPitch))*golfScale, 1)
+
     const shelfScale = pixelScale(...shelfAnchor)
     const extension = shelfLayout ? MathUtils.smoothstep(shelfAmount, .32, 1) : 0
     const [wallLeft, wallRight] = leftWallEdge.map(([x,y]) => artPoint(x,y))
     const shelfAngle = Math.atan2(wallRight.y-wallLeft.y, wallRight.x-wallLeft.x)
+    const shelfPitch = MathUtils.lerp(.46, golfPitch, golfAmount) * (1-shelfAmount)
+    const shelfYaw = .75 * (1-Math.max(shelfAmount,golfAmount))
+    const naturalAngle = Math.atan2(Math.sin(shelfPitch)*Math.sin(shelfYaw), Math.cos(shelfYaw))
     const overviewOpacity = 1 - MathUtils.smoothstep(shelfAmount, .36, .83)
     models.shelves.forEach(({ group, plank, rowBooks }, row) => {
       const point = artPoint(322, 981 + row*194)
@@ -194,9 +206,6 @@ export function createRoomRenderer(canvas, stage, image, patches, onVisibility) 
       rowBooks.visible = overviewOpacity > 0
       if (rowBooks.visible) for (const book of rowBooks.children) for (const material of book.material) fade(material, overviewOpacity)
       group.position.set(MathUtils.lerp(point.x, 0, extension), MathUtils.lerp(point.y, height/2 - surface, extension), -70)
-      const shelfPitch = .46 * (1-shelfAmount)
-      const shelfYaw = .75 * (1-shelfAmount)
-      const naturalAngle = Math.atan2(Math.sin(shelfPitch)*Math.sin(shelfYaw), Math.cos(shelfYaw))
       group.rotation.set(shelfPitch, shelfYaw, shelfAngle-naturalAngle, 'ZXY')
       group.scale.setScalar(shelfScale)
       const thickness = MathUtils.lerp(22, Math.max(10, (shelfLayout?.height ?? 220)*.066)/shelfScale, extension)
@@ -229,6 +238,7 @@ export function createRoomRenderer(canvas, stage, image, patches, onVisibility) 
     shelfAmount = MathUtils.lerp(startShelf, subject === 'books' ? 1 : 0, mix)
     recordAmount = MathUtils.lerp(startRecord, subject === 'record' ? 1 : 0, mix)
     floorAmount = MathUtils.lerp(startFloor, subject === 'record' || subject === 'globe' ? 1 : 0, mix)
+    golfAmount = MathUtils.lerp(startGolf, subject === 'golf' ? 1 : 0, mix)
     draw()
     if (now < movingUntil || t < 1) invalidate()
   }
@@ -248,6 +258,7 @@ export function createRoomRenderer(canvas, stage, image, patches, onVisibility) 
     startShelf = shelfAmount
     startRecord = recordAmount
     startFloor = floorAmount
+    startGolf = golfAmount
     focusStart = immediate ? -Infinity : performance.now()
     if (immediate && !lost) { cancelAnimationFrame(frame); tick(performance.now()) }
     else invalidate()

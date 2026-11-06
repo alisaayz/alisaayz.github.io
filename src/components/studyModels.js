@@ -1,7 +1,7 @@
 import {
   AmbientLight, BoxGeometry, CanvasTexture, CatmullRomCurve3, CylinderGeometry,
-  DirectionalLight, Group, Mesh, MeshBasicMaterial, MeshStandardMaterial, PlaneGeometry,
-  Scene, SphereGeometry, SRGBColorSpace, TextureLoader, TorusGeometry, TubeGeometry, Vector3,
+  DirectionalLight, Group, LatheGeometry, Mesh, MeshBasicMaterial, MeshStandardMaterial, PlaneGeometry,
+  RepeatWrapping, Scene, SphereGeometry, SRGBColorSpace, TextureLoader, TorusGeometry, TubeGeometry, Vector2, Vector3,
 } from 'three'
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js'
 import globeMap from '../assets/study/world-visited.webp'
@@ -10,6 +10,23 @@ import { shelfBooks } from '../study.js'
 export const shelfAnchor = [358, 998]
 export const recordAnchor = [1274, 2150]
 export const globeAnchor = [1760, 2013]
+
+const agedBrass = '#b29362'
+
+function fabricCanvas() {
+  const canvas = document.createElement('canvas')
+  canvas.width = canvas.height = 64
+  const ctx = canvas.getContext('2d')
+  const image = ctx.createImageData(64, 64)
+  for (let y = 0; y < 64; y++) for (let x = 0; x < 64; x++) {
+    const i = (y*64+x)*4
+    const thread = ((x+y)%4 === 0 ? 22 : -14) + 9*Math.sin(x*2.97+y*1.45)
+    image.data.fill(128+thread, i, i+3)
+    image.data[i+3] = 255
+  }
+  ctx.putImageData(image, 0, 0)
+  return canvas
+}
 
 function woodTexture(color = '#b5814d') {
   const canvas = document.createElement('canvas')
@@ -47,6 +64,91 @@ function box(group, material, w, h, d, x, y, z) {
 
 function cylinder(group, material, r, h, x, y, z) {
   return part(group, new CylinderGeometry(r, r, h, 80), material, x, y, z)
+}
+
+function lathe(group, material, outline, x = 0, y = 0, z = 0) {
+  return part(group, new LatheGeometry(outline.map(([r,h]) => new Vector2(r,h)), 72), material, x, y, z)
+}
+
+function piping(group, material, points, radius, closed = false) {
+  const curve = new CatmullRomCurve3(points.map(point => new Vector3(...point)), closed)
+  return part(group, new TubeGeometry(curve, 64, radius, 8, closed), material, 0, 0, 0)
+}
+
+function golfBag(fabric) {
+  const group = new Group()
+  const bumpMap = new CanvasTexture(fabric)
+  bumpMap.wrapS = bumpMap.wrapT = RepeatWrapping
+  bumpMap.repeat.set(7, 10)
+  const cloth = document.createElement('canvas')
+  cloth.width = 128
+  cloth.height = 256
+  const ctx = cloth.getContext('2d')
+  const surface = ctx.createImageData(128,256)
+  for (let y = 0; y < 256; y++) for (let x = 0; x < 128; x++) {
+    const i = (y*128+x)*4
+    const light = 236 + 6*Math.sin(x*.31+y*.18) + 5*Math.cos(y*.42-x*.28) + ((x+y)%4===0 ? 7 : -4)
+    surface.data.fill(light,i,i+3)
+    surface.data[i+3] = 255
+  }
+  ctx.putImageData(surface,0,0)
+  const map = new CanvasTexture(cloth)
+  map.colorSpace = SRGBColorSpace
+  const canvas = new MeshStandardMaterial({ color:'#88845c', map, bumpMap, bumpScale:1.04, roughness:.97 })
+  const pocket = new MeshStandardMaterial({ color:'#918a63', map, bumpMap, bumpScale:.89, roughness:.95 })
+  const trim = new MeshStandardMaterial({ color:'#bfa77e', roughness:.75 })
+  const webbing = new MeshStandardMaterial({ color:'#50482f', bumpMap, bumpScale:.38, roughness:.94 })
+  const inner = new MeshStandardMaterial({ color:'#393a2c', roughness:.9 })
+  const hardware = new MeshStandardMaterial({ color:agedBrass, roughness:.46, metalness:.22 })
+  const steel = new MeshStandardMaterial({ color:'#bfb7a6', roughness:.34, metalness:.34 })
+
+  lathe(group, canvas, [[0,1],[55,1],[67,5],[74,17],[75,35],[71,52],[69,93],[67,163],[66,237],
+    [65,309],[65,352],[68,366],[69,400],[67,417],[62,422],[55,420],[52,411],[52,364],[0,364]])
+  lathe(group, inner, [[54,414],[50.7,406],[50.7,366],[0,366]])
+  for (const [radius,y,tube,material] of [[66,416,3.5,trim],[67,365,3,trim],[75,36,2.5,webbing]]) {
+    part(group, new TorusGeometry(radius,tube,10,72), material, 0, y, 0).rotation.x = Math.PI/2
+  }
+
+  const front = new Group()
+  front.position.set(12, 116, 65)
+  front.rotation.z = -.04
+  part(front, new RoundedBoxGeometry(103,143,43,5,18), pocket, 0, 0, 0)
+  piping(front, trim, [[-43,53,17],[-30,66,20],[32,66,20],[45,50,19],[45,-51,19],
+    [30,-65,20],[-31,-65,20],[-45,-49,18]], 1.85, true)
+  part(front, new RoundedBoxGeometry(5,16,3,2,1.4), hardware, -42, 11, 22).rotation.z = -.28
+  group.add(front)
+
+  const side = new Group()
+  side.position.set(-56, 165, 34)
+  side.rotation.set(-.06, -.55, -.14)
+  part(side, new RoundedBoxGeometry(50,177,38,4,14), canvas, 0, 0, 0)
+  piping(side, trim, [[-20,73,16],[-10,82,18],[11,82,18],[21,70,16],[21,-70,16],
+    [11,-81,18],[-11,-81,18],[-21,-70,16]], 1.55, true)
+  group.add(side)
+  piping(group, webbing, [[-47,349,19],[-69,327,21],[-91,278,20],[-93,212,12],[-77,152,1]], 6)
+  piping(group, trim, [[-48,347,24],[-69,326,26],[-91,278,24],[-94,211,16],[-77,153,5]], 1.15)
+  const clasp = part(group, new TorusGeometry(8,1.6,8,28), hardware, -52, 341, 30)
+  clasp.scale.set(.78,1.2,1)
+  piping(group, trim, [[-32,319,56],[-33,275,57],[-32,222,57],[-33,179,59]], .85)
+
+  for (const [x,z,tipX,tipY,tipZ,headAngle] of [
+    [-29,9,-48,473,10,.14],[-12,-25,-18,520,-23,.44],[19,-19,24,529,-20,.37],[32,14,54,486,19,.42],
+  ]) {
+    const shaft = [[x,383,z],[tipX,tipY,tipZ]]
+    piping(group, steel, shaft, 3.4)
+    piping(group, inner, [[x,377,z],[x+(tipX-x)*.34,383+(tipY-383)*.34,z+(tipZ-z)*.34]], 4.9)
+    const head = new Group()
+    head.position.set(tipX+(tipX<0?-14:12),tipY+8,tipZ+2)
+    head.rotation.set(.12, .23, headAngle*(tipX<0?-1:1))
+    if (tipY >= 520) {
+      part(head, new SphereGeometry(1, 40, 28), steel, 0, 0, 0).scale.set(28,16,14)
+    } else {
+      part(head, new RoundedBoxGeometry(54,29,21,5,10), steel, 0, 0, 0)
+      for (let line = -2; line <= 2; line++) box(head, inner, 29, .55, .6, 0, line*2.6, 10.5)
+    }
+    group.add(head)
+  }
+  return group
 }
 
 function turntable(grain) {
@@ -117,8 +219,8 @@ function listeningStation(grain, shadow) {
 function globeModel(grain) {
   const group = new Group()
   const wood = new MeshStandardMaterial({ map: grain, color:'#b39176', roughness:.7 })
-  const brass = new MeshStandardMaterial({ color:'#b2935c', roughness:.41, metalness:.22 })
-  cylinder(group, wood, 40, 9, 0, 4, 0)
+  const brass = new MeshStandardMaterial({ color:agedBrass, roughness:.41, metalness:.22 })
+  lathe(group, wood, [[0,0],[34,0],[38,1],[40,3],[40,7],[38,9],[35,10],[0,10]])
   cylinder(group, wood, 10, 41, 0, 22, 0)
   const mount = part(group, new TorusGeometry(86, 3.3, 10, 80, Math.PI), brass, 0, 113, 0)
   mount.rotation.z = -1.96
@@ -145,7 +247,7 @@ function shadowMaterial() {
   return new MeshBasicMaterial({ map:new CanvasTexture(canvas), transparent:true, depthWrite:false })
 }
 
-function bookTexture(book, spine) {
+function bookTexture(book, spine, fabric) {
   const canvas = document.createElement('canvas')
   canvas.width = spine ? 180 : 540
   canvas.height = 1024
@@ -158,6 +260,12 @@ function bookTexture(book, spine) {
   light.addColorStop(1, '#1d160d34')
   ctx.fillStyle = light
   ctx.fillRect(0, 0, canvas.width, canvas.height)
+  ctx.globalCompositeOperation = 'soft-light'
+  ctx.globalAlpha = .32
+  ctx.fillStyle = ctx.createPattern(fabric, 'repeat')
+  ctx.fillRect(0, 0, canvas.width, canvas.height)
+  ctx.globalAlpha = 1
+  ctx.globalCompositeOperation = 'source-over'
   ctx.fillStyle = book.ink
   ctx.textAlign = 'center'
   ctx.textBaseline = 'middle'
@@ -186,10 +294,11 @@ export function createStudyModels(requestDraw) {
   const shadows = new Scene()
   const booksScene = new Scene()
   const grain = woodTexture()
+  const fabric = fabricCanvas()
   const oak = new MeshStandardMaterial({ map: grain, roughness: .82 })
   const shelves = [0, 1].map(row => {
     const group = new Group()
-    const plank = box(group, oak, 1, 1, 1, 0, 0, 0)
+    const plank = part(group, new RoundedBoxGeometry(1, 1, 1, 2, .018), oak, 0, 0, 0)
     const rowBooks = new Group()
     shelfBooks.slice(row*5, row*5+5).forEach((book,i) => {
       const cover = new MeshStandardMaterial({ color:book.color, roughness:.91 })
@@ -206,10 +315,14 @@ export function createStudyModels(requestDraw) {
   const recordShadow = part(shadows, new PlaneGeometry(1, 1), shadow, 0, 0, 0)
   const shelfShadows = shelves.map(() => part(shadows, new PlaneGeometry(1, 1), shadow, 0, 0, 0))
   const globeShadow = part(shadows, new PlaneGeometry(1, 1), shadow, 0, 0, 0)
+  const golfShadow = part(shadows, new PlaneGeometry(1, 1), shadow, 0, 0, 0)
   const globe = globeModel(grain)
-  const sun = new DirectionalLight('#fff3df', 2.4)
+  const golf = golfBag(fabric)
+  const sun = new DirectionalLight('#fff3df', 2.35)
   sun.position.set(-3, 6, 8)
-  scene.add(record, globe.group, sun, new AmbientLight('#fff7eb', 1.6))
+  const fill = new DirectionalLight('#f6dec2', .36)
+  fill.position.set(4, 2, -4)
+  scene.add(record, globe.group, golf, sun, fill, new AmbientLight('#fff7eb', 1.46))
   const bookBox = new BoxGeometry(1, 1, 1)
   const paper = new MeshBasicMaterial({ color: '#d8c6a8' })
   const books = [], appearances = new Map()
@@ -225,8 +338,8 @@ export function createStudyModels(requestDraw) {
 
   function appearance(book) {
     if (appearances.has(book.number)) return appearances.get(book.number)
-    const spine = new MeshBasicMaterial({ map: bookTexture(book, true) })
-    const cover = new MeshBasicMaterial({ map: bookTexture(book, false) })
+    const spine = new MeshBasicMaterial({ map: bookTexture(book, true, fabric) })
+    const cover = new MeshBasicMaterial({ map: bookTexture(book, false, fabric) })
     const back = new MeshBasicMaterial({ color: book.color })
     const materials = [cover, paper, paper, paper, spine, back]
     appearances.set(book.number, materials)
@@ -269,9 +382,13 @@ export function createStudyModels(requestDraw) {
       for (const material of [].concat(node.material)) materials.add(material)
     })
     for (const appearance of appearances.values()) for (const material of appearance) materials.add(material)
-    for (const material of materials) { if (material.map) textures.add(material.map); material.dispose() }
+    for (const material of materials) {
+      if (material.map) textures.add(material.map)
+      if (material.bumpMap) textures.add(material.bumpMap)
+      material.dispose()
+    }
     for (const geometry of geometries) geometry.dispose()
     for (const texture of textures) texture.dispose()
   }
-  return { scene, shadows, booksScene, shelves, record, recordShadow, shelfShadows, globe, globeShadow, drawBooks, dispose }
+  return { scene, shadows, booksScene, shelves, record, recordShadow, shelfShadows, globe, globeShadow, golf, golfShadow, drawBooks, dispose }
 }
