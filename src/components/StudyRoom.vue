@@ -270,7 +270,11 @@ onUnmounted(() => {
 <template>
   <dialog ref="dialog" class="room-dialog" aria-labelledby="room-title" @cancel="escape" @keydown.esc.stop="escape" @close="emit('close')">
     <header class="room-header" :inert="introOpen">
-      <div class="room-title"><span>Behind the page</span><h2 id="room-title">The study room</h2></div>
+      <div class="room-title">
+        <span>Behind the page</span>
+        <h2 id="room-title">The study room</h2>
+        <p class="room-version">demo v2</p>
+      </div>
       <button v-if="!selected && !returning" ref="closeButton" class="room-close" type="button" @click="emit('close')" aria-label="Close study room">×</button>
     </header>
 
