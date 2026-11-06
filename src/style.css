@@ -208,8 +208,9 @@ h5,h6 { font: 650 .91rem/1.4 var(--sans) }
 .skill-dialog::backdrop { background:#1926359e }
 .skill-dialog-header { display:flex; justify-content:space-between; align-items:start; gap:10px }
 .skill-dialog-header h2 { font-size:1.2rem; line-height:1.4 }
-.skill-dialog p { color:var(--muted); font-size:.83rem; margin-top:8px }
-.skill-dialog ul { padding:0; margin:12px 0 0; list-style:none }
+.skill-examples { margin-top:14px }
+.skill-examples h3 { color:var(--muted); font:600 .83rem/1.4 var(--sans) }
+.skill-dialog ul { padding:0; margin:7px 0 0; list-style:none }
 .skill-dialog li+li { margin-top:6px }
 .skill-dialog button { background:var(--soft); border:1px solid var(--line); color:var(--accent); padding:5px 8px; text-align:left }
 .skill-dialog button:hover { text-decoration:underline }

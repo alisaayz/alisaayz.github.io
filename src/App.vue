@@ -33,15 +33,19 @@ const pageInfo = computed(() => pages[pageIndex.value])
 const skillDialog = ref(null)
 const selectedSkill = ref('')
 const skillProjects = computed(() => featuredProjects.filter(project => project.tools.includes(selectedSkill.value)))
-const usedSkills = new Set(featuredProjects.flatMap(project => project.tools))
+const skillExperience = computed(() => resume.experience.filter(experience => experience.skills?.includes(selectedSkill.value)))
+const usedSkills = new Set([
+  ...featuredProjects.flatMap(project => project.tools),
+  ...resume.experience.flatMap(experience => experience.skills ?? []),
+])
 function showSkill(skill) {
   selectedSkill.value = skill
   skillDialog.value.showModal()
 }
-async function showProject(project) {
+async function showSkillExample(page, id) {
   skillDialog.value.close()
-  await navigate('projects')
-  const item = document.getElementById(project.id)
+  await navigate(page)
+  const item = document.getElementById(id)
   item?.scrollIntoView({ block:'center' })
   item?.focus({ preventScroll:true })
 }
@@ -154,7 +158,7 @@ onUnmounted(() => {
           </div>
           <section class="section-block">
             <ol class="timeline resume-timeline">
-              <li v-for="experience in resume.experience" :key="experience.company">
+              <li v-for="experience in resume.experience" :id="experience.id" :key="experience.id" tabindex="-1">
                 <h4>{{ experience.company }}</h4>
                 <p class="resume-meta">{{ experience.location }}</p>
                 <div v-for="role in experience.roles" :key="role.title" class="resume-role">
@@ -204,7 +208,7 @@ onUnmounted(() => {
         </template>
         <template v-else-if="activePage === 'skills'">
           <section class="section-block">
-            <p class="skill-hint">Select a skill with an arrow to see where I used it.</p>
+            <p class="skill-hint">Select a skill with an arrow to see related projects and work experience.</p>
             <div v-for="skill in resume.skills" :key="skill.category" class="resume-skill-group">
               <h4>{{ skill.category }}</h4>
               <div class="interest-tags">
@@ -273,10 +277,24 @@ onUnmounted(() => {
   <dialog ref="skillDialog" class="skill-dialog" aria-labelledby="skill-dialog-title">
     <div class="skill-dialog-header">
       <h2 id="skill-dialog-title">{{ selectedSkill }}</h2>
-      <form method="dialog"><button type="submit" aria-label="Close skill projects">×</button></form>
+      <form method="dialog"><button type="submit" aria-label="Close skill examples">×</button></form>
     </div>
-    <p>Used in these projects:</p>
-    <ul><li v-for="project in skillProjects" :key="project.id"><button type="button" @click="showProject(project)">{{ project.title }} <Icon name="arrow" /></button></li></ul>
+    <section v-if="skillProjects.length" class="skill-examples">
+      <h3>Projects</h3>
+      <ul>
+        <li v-for="project in skillProjects" :key="project.id">
+          <button type="button" @click="showSkillExample('projects', project.id)">{{ project.title }} <Icon name="arrow" /></button>
+        </li>
+      </ul>
+    </section>
+    <section v-if="skillExperience.length" class="skill-examples">
+      <h3>Work Experience</h3>
+      <ul>
+        <li v-for="experience in skillExperience" :key="experience.id">
+          <button type="button" @click="showSkillExample('experience', experience.id)">{{ experience.company }} <Icon name="arrow" /></button>
+        </li>
+      </ul>
+    </section>
   </dialog>
   <StudyRoom v-if="roomOpen" @close="closeRoom" />
 </template>

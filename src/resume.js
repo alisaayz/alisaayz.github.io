@@ -43,8 +43,14 @@ export const resume = {
   ],
   experience: [
     {
+      id: 'york-biotechnology',
       company: 'York Biotechnology',
       location: 'Vancouver, BC & Hangzhou, CN',
+      skills: [
+        'Financial Modeling', 'Company & Industry Research', 'Scenario & Sensitivity Analysis',
+        'Market Research', 'Competitive Intelligence', 'Revenue & Cost Forecasting',
+        'ROI & Break-Even Analysis', 'Business Case Development',
+      ],
       roles: [
         { title: 'Strategic Expansion Analyst', dates: 'June 2025 – Aug 2026' },
         { title: 'Research Analyst Intern', dates: 'May 2023 – July 2023' },
@@ -61,8 +67,14 @@ export const resume = {
       ],
     },
     {
+      id: 'cicc-alpha',
       company: 'CICC Alpha',
       location: 'Beijing, CN',
+      skills: [
+        'Risk Analysis', 'Financial Modeling', 'DCF Valuation', 'Comparable Company Analysis',
+        'Company & Industry Research', 'Investment Due Diligence', 'Scenario & Sensitivity Analysis',
+        'Data Storytelling',
+      ],
       roles: [{ title: 'Investment Analyst Intern', dates: 'June 2024 – Aug 2024' }],
       groups: [
         { bullets: [
@@ -74,8 +86,13 @@ export const resume = {
       ],
     },
     {
+      id: 'industrial-securities',
       company: 'Industrial Securities',
       location: 'Shanghai, CN',
+      skills: [
+        'Comparable Company Analysis', 'Company & Industry Research', 'Market Research',
+        'Competitive Intelligence', 'Data Storytelling',
+      ],
       roles: [{ title: 'Investment Analyst Intern', dates: 'June 2023 – Aug 2023' }],
       groups: [
         { bullets: [
@@ -85,6 +102,7 @@ export const resume = {
       ],
     },
     {
+      id: 'dublo-solutions',
       company: 'Dublo Solutions (Sustainable Packaging)',
       location: 'Vancouver, BC',
       roles: [{ title: 'Co-Founder', dates: 'Mar 2020 – Mar 2022' }],
