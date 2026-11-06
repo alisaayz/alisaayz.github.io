@@ -258,7 +258,8 @@ onUnmounted(() => {
     </main>
   </div>
   <button ref="corner" class="page-fold" type="button" aria-label="Open the study room" aria-haspopup="dialog" :aria-expanded="roomOpen" @pointerenter="warmStudy" @focus="warmStudy" @click="roomOpen = true">
-    <span class="fold-face" aria-hidden="true"></span><span class="fold-label" aria-hidden="true">Study Room</span>
+    <span class="fold-face" aria-hidden="true"></span>
+    <span class="fold-label" aria-hidden="true"><span>Study Room</span><span class="fold-demo">demo</span></span>
   </button>
   <dialog ref="skillDialog" class="skill-dialog" aria-labelledby="skill-dialog-title">
     <div class="skill-dialog-header">

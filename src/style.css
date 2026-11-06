@@ -113,13 +113,52 @@ h5,h6 { font: 650 .91rem/1.4 var(--sans) }
 .gallery-card figcaption,.cat-card figcaption { color: var(--muted); font-size: .84rem; line-height: 1.4; margin-top: 7px }
 .cat-grid { margin-top: 12px }
 .cat-card img { width: 100%; aspect-ratio: 4/5; object-fit: cover; display: block }
-.page-fold { position: fixed; inset: 0 0 auto auto; z-index: 8; border: 0; background: #385672; padding: 0; width: 76px; height: 76px; clip-path: polygon(0 0,100% 0,100% 100%); color: #f8fcff; transition: width .2s,height .2s }
-.fold-face { position: absolute; inset: 0; clip-path: polygon(0 0,100% 100%,82% 52%,45% 30%); background: #7794ad }
-.page-fold::before { content: '↗'; position: absolute; top: 5px; right: 13px; font: 1.3rem var(--sans); transition: opacity .12s }
-.page-fold:hover,.page-fold:focus-visible { width: 140px; height: 96px; background: #395a79 }
-.fold-label { opacity: 0; position: absolute; top: 22px; right: 13px; font: 550 .69rem var(--sans); white-space: nowrap }
-.page-fold:hover .fold-label,.page-fold:focus-visible .fold-label { opacity: 1 }
-.page-fold:hover::before,.page-fold:focus-visible::before { opacity: 0 }
+.page-fold {
+  --fold-edge: 76px;
+  --fold-width: 152px;
+  --fold-height: 108px;
+  --fold-ease: .44s cubic-bezier(.24,.78,.26,1);
+  position: fixed; inset: 0 0 auto auto; z-index: 8;
+  width: calc(var(--fold-edge)/2); height: calc(var(--fold-edge)/2);
+  border: 0; padding: 0; color: #f8fcff; background: transparent;
+}
+.page-fold::after,.fold-face {
+  position: absolute; inset: 0 0 auto auto;
+  width: var(--fold-width); height: var(--fold-height);
+}
+.page-fold::after {
+  content: ''; background: #385672;
+  clip-path: polygon(calc(100% - var(--fold-edge)) 0,100% 0,100% var(--fold-edge));
+  transition: clip-path var(--fold-ease), background-color var(--fold-ease);
+}
+.fold-face {
+  z-index: 1; pointer-events: none; background: linear-gradient(145deg,#91aabf,#6685a0);
+  clip-path: polygon(calc(100% - var(--fold-edge)) 0,100% var(--fold-edge),
+    calc(100% - var(--fold-edge)*.18) calc(var(--fold-edge)*.52),
+    calc(100% - var(--fold-edge)*.55) calc(var(--fold-edge)*.30));
+  transition: clip-path var(--fold-ease);
+}
+.page-fold::before { content: '↗'; position: absolute; z-index: 2; top: 5px; right: 13px; font: 1.3rem var(--sans); transition: opacity .2s ease }
+.fold-label {
+  position: absolute; z-index: 2; top: 16px; right: 13px; display: grid; justify-items: end; gap: 4px; pointer-events: none;
+  opacity: 0; transform: translateY(-4px); white-space: nowrap; font: 600 .72rem/1.15 var(--sans);
+  transition: opacity .22s ease, transform .32s ease;
+}
+.fold-demo { color: #dbe8f3; font: 500 .63rem/1 var(--mono); }
+.page-fold:is(:hover,:focus-visible)::after { clip-path: polygon(0 0,100% 0,100% 100%); background: #395a79 }
+.page-fold:is(:hover,:focus-visible) .fold-face { clip-path: polygon(0 0,100% 100%,84% 60%,45% 32%) }
+.page-fold:is(:hover,:focus-visible) .fold-label { opacity: 1; transform: none; transition-delay: .09s }
+.page-fold:is(:hover,:focus-visible)::before { opacity: 0 }
+@media (hover: none) {
+  .page-fold { --fold-width: 113px; --fold-height: 84px; width: 44px; height: 44px }
+  .page-fold::after { clip-path: polygon(0 0,100% 0,100% 100%) }
+  .page-fold .fold-face { clip-path: polygon(0 0,100% 100%,84% 60%,45% 32%) }
+  .page-fold .fold-label { opacity: 1; transform: none }
+  .page-fold::before { opacity: 0 }
+}
+@media (prefers-reduced-motion: reduce) {
+  .fold-face,.fold-label,.page-fold::before,.page-fold::after { transition: none }
+}
 @media(max-width: 760px) {
   .site-layout { grid-template-columns: 1fr }
   .sidebar { position: relative; height: auto; padding: 16px 23px 15px; gap: 12px; border: 0; border-bottom: 1px solid var(--line) }
@@ -131,7 +170,7 @@ h5,h6 { font: 650 .91rem/1.4 var(--sans) }
   .sidebar-appearance { display: none }
   .mobile-appearance-footer { display: block; border-top: 1px solid var(--line); padding: 12px 23px 24px }
   .about-page,.page-content { padding: 36px 23px 42px }
-  .page-fold { width: 58px; height: 58px }
+  .page-fold { --fold-edge: 58px }
 }
 @media(max-width: 465px) {
   .about-page { grid-template-columns: minmax(0,1fr) 105px; gap: 22px 12px }
